@@ -226,20 +226,15 @@
     <div class="card">
       <h2>💬 Practicar conversación con Claude</h2>
       <p style="color:var(--muted);font-size:14px">Copia un prompt y pégalo en la app de Claude. Cambia [nivel] y [tema] por los de tu semana (los ves en "Hoy").</p>
-      <h3 style="color:var(--accent2)">⭐ Tu ficha de hoy (recomendado)</h3>
+      <h3 style="color:var(--accent2)">1 · Conversación — ⭐ tu ficha de hoy (recomendado)</h3>
       <div class="prompt" style="border:1px solid var(--accent2)"><button class="copybtn" id="fichaCopy">Copiar</button><code id="fichaText">—</code></div>
       <div class="smallnote">Pulsa "Copiar" y pégasela a Claude <b>al empezar la conversación</b>. Lleva tu nivel, tu semana, lo que ya dominas y lo que debes reforzar, para que Claude se adapte a ti hoy. El tiempo lo cuenta la actividad "🗣️ Conversar con Claude" de la pestaña Hoy.</div>
       <hr>
-      <h3>1 · Conversación guiada</h3>
-      <div class="prompt"><button class="copybtn">Copiar</button><code>Eres mi profesor de inglés. Mi nivel es [A1/A2/B1/B2]. Conversa conmigo sobre: [tema].
-- Inglés sencillo, una pregunta cada vez.
-- Tras cada respuesta corrígeme (✅ versión correcta) y explica en español.
-- Si me bloqueo, dame 2 opciones. Empieza ya.</code></div>
+      <p style="color:var(--muted);font-size:13px">Todos estos prompts ya incluyen tu nivel y lo que debes reforzar; cópialos y pégalos tal cual.</p>
       <h3>2 · Corregir lo que escribo</h3>
-      <div class="prompt"><button class="copybtn">Copiar</button><code>Corrige este texto (nivel [A1/A2/B1/B2]). Dame: versión corregida, tabla de errores (qué escribí | corrección | por qué en español) y 3 frases más naturales.
-Texto: """[pega aquí]"""</code></div>
-      <h3>3 · Conversación por voz (a ciegas)</h3>
-      <div class="prompt"><button class="copybtn">Copiar</button><code>Abre el modo voz de la app de Claude y dime: "Hazme una conversación en inglés de nivel [A1/A2/B1/B2], 10 preguntas, una a una, y corrígeme al final."</code></div>
+      <div class="prompt"><button class="copybtn">Copiar</button><code id="p2text">—</code></div>
+      <h3>3 · Conversación por voz</h3>
+      <div class="prompt"><button class="copybtn">Copiar</button><code id="p3text">—</code></div>
     </div>
   </section>
 
@@ -1338,7 +1333,10 @@ function buildClaudePrompt(){
    +'- Tras unos 10 intercambios, hazme un mini-resumen: 2 cosas que hice bien y 2 a mejorar.\n'
    +'Empieza ya con la primera pregunta.';
 }
-function renderFicha(){ const el=document.getElementById('fichaText'); if(el) el.textContent=buildClaudePrompt(); }
+function ctxLine(){ const w=ti<0?0:Math.min(47,Math.floor(ti/7)); const ph=phaseOfWeek(w+1); const wk=WEEKS[w]; const weak=weakTopics(store); const weakTxt=weak.length?weak.slice(0,8).join(', '):'(sin puntos débiles registrados aún)'; return 'Soy nivel '+ph.level+' (semana '+(w+1)+' de 48). Tema de la semana: '+wk.g+' / '+wk.v+'. Lo que más me cuesta (incide aquí): '+weakTxt+'.'; }
+function buildPrompt2(){ return 'Corrige este texto que escribí en inglés. '+ctxLine()+'\nDevuélveme: 1) versión corregida; 2) una tabla de errores (qué escribí | corrección | por qué en español), incidiendo en mis puntos débiles; 3) tres frases más naturales que podría usar.\nMi texto:\n"""\n[pega aquí tu texto]\n"""'; }
+function buildPrompt3(){ const w=ti<0?0:Math.min(47,Math.floor(ti/7)); const code=phaseOfWeek(w+1).level.split(' ').pop(); return 'Vamos a practicar conversación por voz (usa el modo voz). '+ctxLine()+'\nHazme 10 preguntas, una a una, en inglés sencillo de mi nivel ('+code+'); espera mi respuesta hablada y corrígeme cada una (versión correcta con ✅ + por qué en español), incidiendo en mis puntos débiles. Si me bloqueo, dame 2 opciones. Al final, resume 2 aciertos y 2 mejoras. Empieza ya.'; }
+function renderFicha(){ const f=document.getElementById('fichaText'); if(f)f.textContent=buildClaudePrompt(); const a=document.getElementById('p2text'); if(a)a.textContent=buildPrompt2(); const b=document.getElementById('p3text'); if(b)b.textContent=buildPrompt3(); }
 
 //==================== NAV / COPIAR / IO ====================
 document.getElementById('nav').addEventListener('click',e=>{
