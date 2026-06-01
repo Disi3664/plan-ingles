@@ -226,6 +226,10 @@
     <div class="card">
       <h2>💬 Practicar conversación con Claude</h2>
       <p style="color:var(--muted);font-size:14px">Copia un prompt y pégalo en la app de Claude. Cambia [nivel] y [tema] por los de tu semana (los ves en "Hoy").</p>
+      <h3 style="color:var(--accent2)">⭐ Tu ficha de hoy (recomendado)</h3>
+      <div class="prompt" style="border:1px solid var(--accent2)"><button class="copybtn" id="fichaCopy">Copiar</button><code id="fichaText">—</code></div>
+      <div class="smallnote">Pulsa "Copiar" y pégasela a Claude <b>al empezar la conversación</b>. Lleva tu nivel, tu semana, lo que ya dominas y lo que debes reforzar, para que Claude se adapte a ti hoy. El tiempo lo cuenta la actividad "🗣️ Conversar con Claude" de la pestaña Hoy.</div>
+      <hr>
       <h3>1 · Conversación guiada</h3>
       <div class="prompt"><button class="copybtn">Copiar</button><code>Eres mi profesor de inglés. Mi nivel es [A1/A2/B1/B2]. Conversa conmigo sobre: [tema].
 - Inglés sencillo, una pregunta cada vez.
@@ -538,7 +542,7 @@ async function onLogin(session){
   renderTop(); renderDay(); renderProgress();
   if(sessionUser.email.toLowerCase()===ADMIN_EMAIL.toLowerCase()){ document.getElementById('navPanel').style.display=''; renderDash(); }
   const sb2=document.getElementById('securityBox'); if(sb2) sb2.style.display='';
-  renderAgeRow(); ensureProfile();
+  renderAgeRow(); ensureProfile(); renderFicha();
 }
 async function doLogout(){ try{await supa.auth.signOut();}catch(e){} sessionUser=null; location.reload(); }
 function loginCreds(){ return {email:(document.getElementById('loginEmail').value||'').trim(), pass:document.getElementById('loginPass').value||''}; }
@@ -1313,6 +1317,29 @@ document.getElementById('dashReload').onclick=renderDash;
   };
 })();
 
+//==================== FICHA PARA CLAUDE ====================
+function buildClaudePrompt(){
+  const w = ti<0?0:Math.min(47,Math.floor(ti/7));
+  const ph=phaseOfWeek(w+1); const wk=WEEKS[w]; const lvl=ph.level; const code=lvl.split(' ').pop();
+  const mc=masteredCounts(store); const weak=weakTopics(store); const st=currentStreak();
+  const weakTxt = weak.length? weak.slice(0,8).join(', ') : '(aún sin puntos débiles registrados)';
+  return 'Eres mi profesor de inglés y mi compañero de conversación. Adapta TODO a estos datos míos (de mi app de estudio):\n'
+   +'- Nivel actual: '+lvl+' (semana '+(w+1)+' de 48)\n'
+   +'- Tema de esta semana — gramática: '+wk.g+'; vocabulario: '+wk.v+'\n'
+   +'- Ya domino: '+mc.v+' palabras, '+mc.g+' conceptos de gramática y '+mc.p+' de pronunciación\n'
+   +'- Lo que más me cuesta (incide aquí): '+weakTxt+'\n'
+   +'- Racha actual: '+st+' días\n'
+   +'Quiero practicar conversación de unos 20 minutos (puedes usar el modo voz).\n'
+   +'Reglas:\n'
+   +'- Háblame en inglés sencillo adaptado a mi nivel ('+code+'); una sola pregunta cada vez y espera mi respuesta.\n'
+   +'- Tras cada respuesta mía: corrígeme en una línea (versión correcta con un ✅) y explica el porqué en español.\n'
+   +'- Da prioridad a mis puntos débiles de arriba.\n'
+   +'- Si me bloqueo, ofréceme 2 opciones de respuesta.\n'
+   +'- Tras unos 10 intercambios, hazme un mini-resumen: 2 cosas que hice bien y 2 a mejorar.\n'
+   +'Empieza ya con la primera pregunta.';
+}
+function renderFicha(){ const el=document.getElementById('fichaText'); if(el) el.textContent=buildClaudePrompt(); }
+
 //==================== NAV / COPIAR / IO ====================
 document.getElementById('nav').addEventListener('click',e=>{
   if(e.target.tagName!=='BUTTON')return;
@@ -1321,6 +1348,7 @@ document.getElementById('nav').addEventListener('click',e=>{
   document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
   document.getElementById('v-'+e.target.dataset.v).classList.add('active');
   if(e.target.dataset.v==='panel') renderDash();
+  if(e.target.dataset.v==='hablar') renderFicha();
 });
 document.addEventListener('click',e=>{
   if(e.target.classList.contains('copybtn')){
@@ -1353,7 +1381,7 @@ function ensureProfile(){ if(store.profile && store.profile.age){ return true; }
 document.querySelectorAll('#profileOverlay [data-age]').forEach(b=>b.onclick=()=>{ store.profile=store.profile||{}; store.profile.age=b.dataset.age; save(); const o=document.getElementById('profileOverlay'); if(o)o.style.display='none'; renderAgeRow(); renderDay(); renderRes(); });
 
 //==================== INIT ====================
-renderPlan(); renderMiles(); renderRes();
+renderPlan(); renderMiles(); renderRes(); renderFicha();
 if(CLOUD_ON){ setSync('','Conectando…'); initAuth(); }
 else { setSync('off',''); renderTop(); renderDay(); renderProgress(); renderAgeRow(); ensureProfile(); }
 </script>
