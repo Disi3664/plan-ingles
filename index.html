@@ -1099,7 +1099,17 @@ function renderSession(){
   const sn=document.getElementById('segNext'); if(sn)sn.onclick=nextSegment;
 }
 
-function speak(word){ try{const u=new SpeechSynthesisUtterance(word);u.lang='en-US';u.rate=.9;speechSynthesis.cancel();speechSynthesis.speak(u);}catch(e){} }
+let _enVoice=null;
+function pickEnVoice(){
+  try{ const vs=speechSynthesis.getVoices(); if(!vs||!vs.length) return null;
+    const pref=['Google US English','Google UK English Female','Google UK English Male','Microsoft Aria Online (Natural) - English (United States)','Microsoft Jenny Online (Natural) - English (United States)','Samantha','Karen','Daniel','Moira','Tessa','Alex'];
+    for(const n of pref){ const v=vs.find(x=>x.name===n); if(v) return v; }
+    return vs.find(x=>/^en[-_]US/i.test(x.lang)) || vs.find(x=>/^en[-_]GB/i.test(x.lang)) || vs.find(x=>/^en/i.test(x.lang)) || null;
+  }catch(e){ return null; }
+}
+function ensureEnVoice(){ if(!_enVoice) _enVoice=pickEnVoice(); return _enVoice; }
+try{ speechSynthesis.getVoices(); speechSynthesis.onvoiceschanged=function(){ _enVoice=pickEnVoice(); }; }catch(e){}
+function speak(word){ try{ const u=new SpeechSynthesisUtterance(word); u.lang='en-US'; u.rate=.9; u.pitch=1; const v=ensureEnVoice(); if(v){u.voice=v;u.lang=v.lang;} speechSynthesis.cancel(); speechSynthesis.speak(u);}catch(e){} }
 function renderExercise(area,d,ex,idx,n){
   const tag = ex.exam?'📝 examen' : (ex.reinforce?'🔁 refuerzo' : (ex.review?'🔁 repaso' : (ex.gram?'gramática':'vocabulario')));
   let html=`<div class="exwrap"><div class="exhead"><span>${ex.exam?'Examen · ':''}Ejercicio ${idx+1} de ${n}</span><span class="extag">${tag}</span></div>`;
