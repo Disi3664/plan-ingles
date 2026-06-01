@@ -1,0 +1,1351 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mi Plan de Inglés · A0 → B2 Fluidez</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  :root{
+    --bg:#0f1226; --bg2:#161a36; --card:#1c2145; --card2:#232a55;
+    --accent:#5b8cff; --accent2:#22d3a6; --warn:#ffb648; --danger:#ff6b6b;
+    --text:#eef1ff; --muted:#9aa3c7; --line:#2c3360; --ok:#22d3a6;
+    --p1:#5b8cff; --p2:#22d3a6; --p3:#ffb648; --p4:#c47bff;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:linear-gradient(160deg,var(--bg),#0a0c1c 80%);color:var(--text);line-height:1.5;}
+  a{color:var(--accent)}
+  header{padding:18px 20px 8px;text-align:center}
+  header h1{margin:0;font-size:22px}
+  header p{margin:4px 0 0;color:var(--muted);font-size:13px}
+  .wrap{max-width:920px;margin:0 auto;padding:0 16px 70px}
+  .topbar{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin:12px 0 4px}
+  .pill{background:var(--card);border:1px solid var(--line);border-radius:999px;padding:7px 13px;font-size:12px;color:var(--muted);display:flex;gap:7px;align-items:center}
+  .pill b{color:var(--text);font-size:13px}
+  .progressbar{height:9px;background:var(--card);border-radius:999px;overflow:hidden;border:1px solid var(--line);margin:10px 0}
+  .progressbar > i{display:block;height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));width:0}
+  nav{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;margin:16px 0}
+  nav button{background:var(--card);color:var(--muted);border:1px solid var(--line);border-radius:10px;padding:8px 13px;font-size:13px;cursor:pointer;transition:.15s}
+  nav button:hover{color:var(--text);border-color:var(--accent)}
+  nav button.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+  .view{display:none;animation:fade .25s}
+  .view.active{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1}}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px;margin:14px 0}
+  .card h2{margin:0 0 4px;font-size:18px}
+  .card h3{margin:16px 0 8px;font-size:14px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
+  .daynav{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:6px}
+  .daynav button{background:var(--card2);border:1px solid var(--line);color:var(--text);border-radius:10px;padding:7px 11px;cursor:pointer;font-size:13px}
+  .daynav button:hover{border-color:var(--accent)}
+  .daytitle{text-align:center}
+  .daytitle .d1{font-size:18px;font-weight:700}
+  .daytitle .d2{font-size:12px;color:var(--muted)}
+  .phasechip{font-size:11px;padding:2px 8px;border-radius:999px;color:#0b0d1f;font-weight:700}
+  .focus{background:var(--card2);border-radius:12px;padding:11px 13px;margin:10px 0;font-size:13px;border-left:4px solid var(--accent)}
+  /* timer */
+  .timerbox{display:flex;align-items:center;justify-content:center;gap:14px;flex-wrap:wrap;background:var(--bg2);border:1px solid var(--line);border-radius:14px;padding:14px;margin:10px 0}
+  .timerclock{font-size:34px;font-weight:800;font-variant-numeric:tabular-nums;letter-spacing:1px}
+  .timerclock.low{color:var(--warn)} .timerclock.done{color:var(--danger)}
+  .timerbtn{background:var(--accent);color:#fff;border:none;border-radius:10px;padding:10px 18px;font-size:15px;font-weight:600;cursor:pointer}
+  .timerbtn.ghost{background:transparent;border:1px solid var(--line);color:var(--muted)}
+  .timermeta{font-size:12px;color:var(--muted)}
+  /* insights */
+  .insight{display:flex;gap:10px;align-items:flex-start;background:var(--bg2);border:1px solid var(--line);border-left:4px solid var(--p3);border-radius:10px;padding:10px 12px;margin:8px 0;font-size:13px}
+  .insight .ic{font-size:18px;flex:0 0 auto}
+  /* exercises */
+  .exwrap{margin-top:8px}
+  .exhead{display:flex;justify-content:space-between;align-items:center;font-size:12px;color:var(--muted);margin-bottom:8px}
+  .extag{display:inline-block;font-size:10px;font-weight:700;padding:2px 8px;border-radius:999px;background:var(--card2);color:var(--accent2);text-transform:uppercase}
+  .exq{font-size:18px;font-weight:600;margin:12px 0;text-align:center}
+  .exq .blank{color:var(--warn)}
+  .opts{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0}
+  .opt{background:var(--bg2);border:2px solid var(--line);border-radius:12px;padding:14px;font-size:16px;cursor:pointer;text-align:center;transition:.12s}
+  .opt:hover{border-color:var(--accent)}
+  .opt.sel{border-color:var(--accent);background:var(--card2)}
+  .opt.correct{border-color:var(--ok);background:rgba(34,211,166,.15)}
+  .opt.wrong{border-color:var(--danger);background:rgba(255,107,107,.15)}
+  .opt.emoji{font-size:40px}
+  .exinput{width:100%;background:var(--bg2);border:2px solid var(--line);border-radius:12px;padding:13px;font-size:17px;color:var(--text);text-align:center}
+  .exinput:focus{border-color:var(--accent);outline:none}
+  .exfeedback{margin:12px 0;padding:11px 13px;border-radius:10px;font-size:14px}
+  .exfeedback.ok{background:rgba(34,211,166,.12);border:1px solid var(--ok)}
+  .exfeedback.no{background:rgba(255,107,107,.12);border:1px solid var(--danger)}
+  .exbtn{width:100%;background:var(--accent);color:#fff;border:none;border-radius:12px;padding:14px;font-size:16px;font-weight:600;cursor:pointer;margin-top:6px}
+  .exbtn:disabled{opacity:.5;cursor:not-allowed}
+  .exbtn.ghost{background:transparent;border:1px solid var(--line);color:var(--muted)}
+  .speakbtn{background:var(--card2);border:1px solid var(--line);color:var(--text);border-radius:10px;padding:10px 16px;font-size:15px;cursor:pointer}
+  .lockmsg{text-align:center;padding:24px;color:var(--muted);font-size:14px}
+  .bigscore{text-align:center;font-size:40px;font-weight:800;margin:6px 0}
+  /* tables / details */
+  table{width:100%;border-collapse:collapse;font-size:13px;margin-top:6px}
+  table th,table td{text-align:left;padding:7px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+  table th{color:var(--muted);font-weight:600}
+  details{border:1px solid var(--line);border-radius:12px;margin:8px 0;background:var(--bg2);overflow:hidden}
+  details summary{cursor:pointer;padding:12px 14px;font-weight:600;font-size:14px;list-style:none;display:flex;justify-content:space-between;align-items:center}
+  details summary::-webkit-details-marker{display:none}
+  details .inner{padding:0 14px 14px;font-size:13px;color:var(--muted)}
+  details .inner b{color:var(--text)}
+  .mile{display:flex;gap:14px;padding:13px 0;border-bottom:1px solid var(--line)}
+  .mile .dot{flex:0 0 auto;width:13px;height:13px;border-radius:50%;margin-top:5px;border:3px solid var(--bg)}
+  .mile .mdate{font-size:12px;color:var(--warn);font-weight:700}
+  .mile .mtitle{font-weight:700;font-size:14px;margin:2px 0}
+  .mile .mdesc{font-size:13px;color:var(--muted)}
+  .mile.passed .mtitle{color:var(--ok)}
+  .reslist{font-size:14px} .reslist li{margin:6px 0}
+  .prompt{background:var(--bg2);border:1px solid var(--line);border-radius:10px;padding:12px;font-size:13px;margin:8px 0;position:relative}
+  .prompt code{display:block;white-space:pre-wrap;color:var(--text);font-family:ui-monospace,Menlo,monospace;font-size:12.5px}
+  .copybtn{position:absolute;top:8px;right:8px;background:var(--accent);color:#fff;border:none;border-radius:8px;padding:4px 10px;font-size:11px;cursor:pointer}
+  .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+  .kpi{flex:1;min-width:110px;text-align:center;background:var(--card2);border-radius:12px;padding:12px}
+  .kpi .n{font-size:22px;font-weight:800}.kpi .l{font-size:12px;color:var(--muted)}
+  .btn{background:var(--accent);color:#fff;border:none;border-radius:10px;padding:9px 14px;font-size:14px;cursor:pointer}
+  .btn.ghost{background:transparent;border:1px solid var(--line);color:var(--muted)}
+  hr{border:none;border-top:1px solid var(--line);margin:16px 0}
+  .smallnote{font-size:12px;color:var(--muted);margin-top:8px}
+  .dashrow{display:flex;align-items:center;gap:12px;padding:12px;border:1px solid var(--line);border-radius:12px;margin:8px 0;background:var(--bg2);flex-wrap:wrap}
+  .dashrow .nm{font-weight:700;min-width:120px}
+  .dashbar{height:8px;background:var(--card2);border-radius:999px;overflow:hidden;flex:1;min-width:120px}
+  .dashbar>i{display:block;height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2))}
+  .tag{display:inline-block;font-size:11px;padding:2px 8px;border-radius:999px;background:var(--card2);color:var(--muted);margin:2px}
+  /* login */
+  #loginOverlay{position:fixed;inset:0;background:linear-gradient(160deg,var(--bg),#0a0c1c 80%);z-index:999;display:flex;align-items:center;justify-content:center;padding:20px}
+  #loginOverlay .box{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:26px;max-width:380px;width:100%;text-align:center}
+  #loginOverlay h2{margin:0 0 6px;font-size:20px}
+  #loginOverlay p{color:var(--muted);font-size:14px;margin:0 0 16px}
+  #loginOverlay input{width:100%;background:var(--bg2);color:var(--text);border:1px solid var(--line);border-radius:10px;padding:11px 12px;font-size:15px;margin-bottom:10px}
+  #loginMsg{font-size:13px;margin-top:12px;min-height:18px}
+  .syncbar{display:flex;justify-content:center;align-items:center;gap:8px;font-size:12px;color:var(--muted);margin:4px 0 0;flex-wrap:wrap}
+  .syncdot{width:8px;height:8px;border-radius:50%;background:var(--muted);display:inline-block}
+  .syncdot.ok{background:var(--ok)}.syncdot.off{background:var(--warn)}.syncdot.err{background:var(--danger)}
+  @media(max-width:560px){.opts{grid-template-columns:1fr 1fr}}
+  .rw{cursor:pointer;border-radius:3px;padding:0 1px} .rw:hover{background:var(--card2);text-decoration:underline}
+</style>
+</head>
+<body>
+<div id="loginOverlay" style="display:none">
+  <div class="box">
+    <h2>🎯 Mi Plan de Inglés</h2>
+    <p>Entra con tu email y contraseña. Tu progreso se guarda en la nube y te sigue a cualquier dispositivo.</p>
+    <input id="loginEmail" type="email" placeholder="tu@email.com" autocomplete="email">
+    <input id="loginPass" type="password" placeholder="Contraseña (mín. 6 caracteres)" autocomplete="current-password">
+    <button class="btn" id="loginBtn" style="width:100%">Entrar</button>
+    <div class="smallnote" style="margin-top:10px">La primera vez se crea tu cuenta automáticamente. Las siguientes, entra con la misma contraseña.</div>
+    <div id="loginMsg"></div>
+  </div>
+</div>
+
+<div id="profileOverlay" style="display:none;position:fixed;inset:0;background:linear-gradient(160deg,var(--bg),#0a0c1c 80%);z-index:998;align-items:center;justify-content:center;padding:20px">
+  <div style="background:var(--card);border:1px solid var(--line);border-radius:18px;padding:26px;max-width:420px;width:100%;text-align:center">
+    <h2 style="margin:0 0 6px">👋 ¿Quién va a aprender?</h2>
+    <p style="color:var(--muted);font-size:14px;margin:0 0 16px">Personalizamos las series, lecturas y temas según tu edad (el nivel de inglés es el mismo).</p>
+    <button class="btn" data-age="kid" style="width:100%;margin:6px 0;padding:14px">🧒 Niño/a (8-12 años)</button>
+    <button class="btn" data-age="teen" style="width:100%;margin:6px 0;padding:14px">🧑 Joven (13-17 años)</button>
+    <button class="btn" data-age="adult" style="width:100%;margin:6px 0;padding:14px">🧑‍💼 Adulto (18+ años)</button>
+  </div>
+</div>
+
+<header>
+  <h1>🎯 Mi Plan de Inglés</h1>
+  <p>Tu tutor activo · de cero a conversación fluida (A0 → B2)</p>
+  <div class="syncbar" id="syncbar"></div>
+</header>
+
+<div class="wrap">
+  <div class="topbar" id="topbar"></div>
+  <div class="progressbar"><i id="globalbar"></i></div>
+
+  <nav id="nav">
+    <button data-v="hoy" class="active">📅 Hoy</button>
+    <button data-v="plan">🗺️ Plan</button>
+    <button data-v="metas">🚩 Metas</button>
+    <button data-v="recursos">📚 Recursos</button>
+    <button data-v="hablar">💬 Hablar con Claude</button>
+    <button data-v="progreso">📈 Mi progreso</button>
+    <button data-v="panel" id="navPanel" style="display:none">👨‍👩‍👧 Panel familiar</button>
+  </nav>
+
+  <!-- HOY -->
+  <section class="view active" id="v-hoy">
+    <div class="card">
+      <div class="daynav">
+        <button id="prevDay">◀</button>
+        <div class="daytitle"><div class="d1" id="dayTitle"></div><div class="d2" id="daySub"></div></div>
+        <button id="nextDay">▶</button>
+      </div>
+      <div id="dayPhase" style="text-align:center;margin:6px 0"></div>
+      <div class="focus" id="dayFocus"></div>
+
+      <div class="timerbox">
+        <div>
+          <div class="timerclock" id="timerClock">120:00</div>
+          <div class="timermeta" id="timerMeta">Sesión diaria · máx. 120 min</div>
+        </div>
+        <div class="row" id="timerCtrls"></div>
+      </div>
+
+      <div id="insightsBox"></div>
+      <div id="sessionArea"></div>
+    </div>
+  </section>
+
+  <!-- PLAN -->
+  <section class="view" id="v-plan">
+    <div class="card">
+      <h2>🗺️ La ruta: 4 fases, 48 semanas</h2>
+      <p style="color:var(--muted);font-size:14px">Cada semana tiene su gramática y vocabulario. El sistema genera los ejercicios automáticamente.</p>
+      <div id="planAccordion"></div>
+    </div>
+  </section>
+
+  <!-- METAS -->
+  <section class="view" id="v-metas">
+    <div class="card">
+      <h2>🚩 Metas volantes y fechas</h2>
+      <p style="color:var(--muted);font-size:14px">Estas son <b>metas orientativas</b>, no fechas garantizadas. Indican dónde deberías estar <i>si mantienes el ritmo y mucha práctica real</i> (escuchar, leer y hablar). Si llegas antes, adelanta; si necesitas más tiempo en algo, tómalo: el progreso sostenido importa más que la fecha exacta.</p>
+      <div id="mileList"></div>
+    </div>
+  </section>
+
+  <!-- RECURSOS -->
+  <section class="view" id="v-recursos">
+    <div class="card"><h2>📚 Recursos por nivel</h2><div id="resBody"></div></div>
+    <div class="card">
+      <h2>🛠️ Herramientas</h2>
+      <ul class="reslist">
+        <li><b>Claude</b> — tu profesor de conversación (pestaña "Hablar con Claude").</li>
+        <li><b>Cambridge Dictionary</b> y <b>WordReference</b> (ES↔EN).</li>
+        <li><b>YouGlish</b> — escucha cualquier palabra dicha por nativos.</li>
+        <li><b>Language Reactor</b> — subtítulos dobles en Netflix/YouTube.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- HABLAR -->
+  <section class="view" id="v-hablar">
+    <div class="card">
+      <h2>💬 Practicar conversación con Claude</h2>
+      <p style="color:var(--muted);font-size:14px">Copia un prompt y pégalo en la app de Claude. Cambia [nivel] y [tema] por los de tu semana (los ves en "Hoy").</p>
+      <h3>1 · Conversación guiada</h3>
+      <div class="prompt"><button class="copybtn">Copiar</button><code>Eres mi profesor de inglés. Mi nivel es [A1/A2/B1/B2]. Conversa conmigo sobre: [tema].
+- Inglés sencillo, una pregunta cada vez.
+- Tras cada respuesta corrígeme (✅ versión correcta) y explica en español.
+- Si me bloqueo, dame 2 opciones. Empieza ya.</code></div>
+      <h3>2 · Corregir lo que escribo</h3>
+      <div class="prompt"><button class="copybtn">Copiar</button><code>Corrige este texto (nivel [A1/A2/B1/B2]). Dame: versión corregida, tabla de errores (qué escribí | corrección | por qué en español) y 3 frases más naturales.
+Texto: """[pega aquí]"""</code></div>
+      <h3>3 · Conversación por voz (a ciegas)</h3>
+      <div class="prompt"><button class="copybtn">Copiar</button><code>Abre el modo voz de la app de Claude y dime: "Hazme una conversación en inglés de nivel [A1/A2/B1/B2], 10 preguntas, una a una, y corrígeme al final."</code></div>
+    </div>
+  </section>
+
+  <!-- PROGRESO -->
+  <section class="view" id="v-progreso">
+    <div class="card">
+      <h2>📈 Mi progreso</h2>
+      <div class="row">
+        <div class="kpi"><div class="n" id="kDays">0</div><div class="l">Días completados</div></div>
+        <div class="kpi"><div class="n" id="kStreak">0</div><div class="l">Racha 🔥</div></div>
+        <div class="kpi"><div class="n" id="kPct">0%</div><div class="l">Plan</div></div>
+        <div class="kpi"><div class="n" id="kAcc">—</div><div class="l">Precisión</div></div>
+        <div class="kpi"><div class="n" id="kHours">0</div><div class="l">Horas</div></div>
+      </div>
+      <h3>🏅 Lo que ya dominas (historial)</h3>
+      <div id="masteredBox" style="font-size:14px;color:var(--muted)">—</div>
+      <h3>Temas que estás reforzando</h3>
+      <div id="weakList" style="font-size:14px;color:var(--muted)">—</div>
+      <hr>
+      <div class="row">
+        <button class="btn ghost" id="exportBtn">💾 Exportar copia</button>
+        <button class="btn ghost" id="importBtn">📥 Importar</button>
+        <input type="file" id="importFile" accept="application/json,.json" style="display:none">
+      </div>
+      <div id="ioMsg" style="font-size:13px;color:var(--ok);margin-top:8px"></div>
+      <hr>
+      <h3>👤 Perfil (personaliza series y lecturas según la edad)</h3>
+      <div class="row" id="ageRow"></div>
+      <div id="securityBox" style="display:none">
+        <hr>
+        <h3>🔑 Cambiar mi contraseña</h3>
+        <div class="row">
+          <input id="newPass" type="password" placeholder="Nueva contraseña (mín. 6)" autocomplete="new-password" style="background:var(--bg2);color:var(--text);border:1px solid var(--line);border-radius:10px;padding:9px 12px;font-size:14px;min-width:200px">
+          <button class="btn" id="changePwBtn">Guardar nueva contraseña</button>
+        </div>
+        <div id="pwMsg" style="font-size:13px;margin-top:8px"></div>
+        <div class="smallnote">Cámbiala por una que recuerdes y apúntala en un sitio seguro.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PANEL FAMILIAR -->
+  <section class="view" id="v-panel">
+    <div class="card">
+      <h2>👨‍👩‍👧 Panel familiar</h2>
+      <p style="color:var(--muted);font-size:14px">Avance de cada persona, en tiempo real desde la nube.</p>
+      <button class="btn ghost" id="dashReload" style="margin-bottom:8px">🔄 Actualizar</button>
+      <div id="dashBody"></div>
+    </div>
+  </section>
+</div>
+
+<script>
+//==================== CONFIG ====================
+const START = new Date(2026,5,1); // 1 jun 2026
+const TOTAL_WEEKS = 48, DAYS = TOTAL_WEEKS*7;
+const APP_NS = "planIngles_v2";
+const DAY_CAP = 7200; // 120 min en segundos
+
+const SUPABASE_URL  = "https://qjrnxmsinjkojtqtaawk.supabase.co";
+const SUPABASE_ANON = "sb_publishable_EDPLIiJtCoo1xRVezsKCGw_NE_IQlqB";
+const ADMIN_EMAIL   = "overlandatv@gmail.com";
+
+const CLOUD_ON = SUPABASE_URL.indexOf("http")===0 && SUPABASE_ANON.length>20;
+let supa=null;
+if(CLOUD_ON && window.supabase){ supa = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON); }
+
+let users = JSON.parse(localStorage.getItem(APP_NS+"_users")||'null') || ["local"];
+let currentUser = localStorage.getItem(APP_NS+"_current") || users[0];
+let sessionUser=null, cloudDisplayName="";
+function saveUsers(){localStorage.setItem(APP_NS+"_users",JSON.stringify(users));localStorage.setItem(APP_NS+"_current",currentUser);}
+function safeId(s){return (s||"").replace(/[^a-zA-Z0-9]/g,"_");}
+function STORE_KEY(){return APP_NS+"_"+safeId(currentUser);}
+
+//==================== CURRÍCULO ====================
+const PHASES = [
+  {n:1,name:"Fase 1 · Supervivencia",level:"A0 → A1",color:"var(--p1)",w:[1,12],
+    series:"Peppa Pig / Muzzy / 'English in a Minute' (BBC)",
+    listen:"BBC Learning English (YouTube), audios de tu curso A1",
+    read:"Lecturas graduadas Starter/A1 (Penguin Readers nivel 1)"},
+  {n:2,name:"Fase 2 · Día a día",level:"A1 → A2",color:"var(--p2)",w:[13,24],
+    series:"'Extra English', 'Friends' con subtítulos en inglés",
+    listen:"Podcast 'EnglishClass101', 'Espresso English'",
+    read:"Readers nivel 2-3, 'News in Levels' (1-2)"},
+  {n:3,name:"Fase 3 · Independiente",level:"A2 → B1",color:"var(--p3)",w:[25,36],
+    series:"'The Office', 'Modern Family' (subt. inglés)",
+    listen:"'The English We Speak' (BBC), 'Luke's English Podcast'",
+    read:"Readers nivel 4-5, 'News in Levels' (3)"},
+  {n:4,name:"Fase 4 · Fluidez",level:"B1 → B2",color:"var(--p4)",w:[37,48],
+    series:"'Ted Lasso', 'The Office' SIN subtítulos, TED Talks",
+    listen:"Podcasts nativos (TED), noticias BBC/CNN",
+    read:"Artículos reales (BBC, The Guardian)"}
+];
+const WEEKS = [
+ {g:"El alfabeto, sonidos y saludos",v:"Pronombres, verbo TO BE, números 1-20"},
+ {g:"Artículos a/an/the · this/that",v:"La familia y los colores"},
+ {g:"Presente simple (afirmativo)",v:"Verbos de rutina diaria"},
+ {g:"Presente simple (negativo y preguntas)",v:"Comida y bebida"},
+ {g:"There is / There are · plurales",v:"La casa y las habitaciones"},
+ {g:"Posesivos · have got / has got",v:"El cuerpo y la ropa"},
+ {g:"Preposiciones de lugar",v:"La ciudad y dar direcciones"},
+ {g:"Can / can't (habilidad)",v:"Trabajos y profesiones"},
+ {g:"Presente continuo",v:"El tiempo y las estaciones"},
+ {g:"Adverbios de frecuencia",v:"Aficiones y tiempo libre"},
+ {g:"Pronombres objeto · like + -ing",v:"Días, meses y la hora"},
+ {g:"Imperativos + REPASO Fase 1",v:"Compras y dinero"},
+ {g:"Pasado simple (to be + regulares)",v:"Viajes y transporte"},
+ {g:"Pasado simple (irregulares)",v:"Vacaciones y festivos"},
+ {g:"Pasado simple (negativo y preguntas)",v:"Salud y el médico"},
+ {g:"Comparativos",v:"Adjetivos de personalidad"},
+ {g:"Superlativos",v:"Naturaleza y animales"},
+ {g:"Be going to (futuro)",v:"Tecnología y móviles"},
+ {g:"some/any/much/many",v:"Restaurantes y cocinar"},
+ {g:"Will (predicciones)",v:"Sentimientos y emociones"},
+ {g:"Presente perfecto (ever/never)",v:"Experiencias de vida"},
+ {g:"Adverbios de modo",v:"Deporte y estar en forma"},
+ {g:"Have to / must",v:"Normas y vida laboral"},
+ {g:"Phrasal verbs (intro) + REPASO Fase 2",v:"Relaciones y amistad"},
+ {g:"Presente perfecto vs pasado",v:"Noticias y actualidad"},
+ {g:"Primer condicional",v:"Medio ambiente y clima"},
+ {g:"Segundo condicional",v:"Sueños y ambiciones"},
+ {g:"Used to",v:"Infancia y recuerdos"},
+ {g:"Modales de probabilidad",v:"Ciencia y el espacio"},
+ {g:"Oraciones de relativo",v:"Educación y aprendizaje"},
+ {g:"Estilo indirecto (intro)",v:"Medios y entretenimiento"},
+ {g:"Voz pasiva (presente/pasado)",v:"Negocios y economía"},
+ {g:"Gerundio vs infinitivo",v:"Arte y cultura"},
+ {g:"Futuro continuo",v:"Planes y proyectos"},
+ {g:"Pasado continuo vs pasado",v:"Contar anécdotas"},
+ {g:"Phrasal verbs (avanzado) + REPASO Fase 3",v:"Expresiones idiomáticas"},
+ {g:"Presente perfecto continuo",v:"Carrera profesional"},
+ {g:"Pasado perfecto",v:"Narraciones complejas"},
+ {g:"Tercer condicional",v:"Arrepentimientos e hipótesis"},
+ {g:"Condicionales mixtos",v:"Política y sociedad"},
+ {g:"Estilo indirecto (avanzado)",v:"Debate y argumentación"},
+ {g:"Pasiva (todos los tiempos) · causative",v:"Ley y justicia"},
+ {g:"Modales de deducción en pasado",v:"Misterio y especulación"},
+ {g:"Wish / if only",v:"Emociones y psicología"},
+ {g:"Conectores del discurso",v:"Registro formal vs informal"},
+ {g:"Collocations avanzadas",v:"Fluidez en el trabajo"},
+ {g:"Modismos y expresiones naturales",v:"Humor y matices"},
+ {g:"REPASO FINAL + simulacro oral",v:"Todo: conversación libre"}
+];
+const MILES = {
+ 4:{t:"Meta Mes 1 — Primeras frases",d:"Te presentas, edad, familia. Cuentas hasta 100. Pides comida básica."},
+ 8:{t:"Meta Mes 2 — Describir tu mundo",d:"Describes tu casa, ropa, lo que sabes hacer (can) y lo que haces ahora (-ing)."},
+ 12:{t:"🏆 NIVEL A1",d:"Conversación básica de supervivencia. ~500 palabras. ¡Test A1!"},
+ 16:{t:"Meta Mes 4 — El pasado",d:"Cuentas qué hiciste (pasado simple). Comparas cosas."},
+ 20:{t:"Meta Mes 5 — Futuro y opiniones",d:"Planes (going to, will), pides en restaurante, expresas emociones."},
+ 24:{t:"🏆 NIVEL A2",d:"Conversación cotidiana sin grandes bloqueos. ~1.200 palabras. ¡Test A2!"},
+ 28:{t:"Meta Mes 7 — Condicionales",d:"Condicionales, hábitos del pasado (used to), probabilidad."},
+ 32:{t:"Meta Mes 8 — Estructuras complejas",d:"Relativos, pasiva, estilo indirecto. Series con subtítulos en inglés."},
+ 36:{t:"🏆 NIVEL B1",d:"Fluidez razonable, cuentas historias y das opiniones. ~2.500 palabras. ¡Test B1!"},
+ 40:{t:"Meta Mes 10 — Discurso avanzado",d:"Pasado perfecto, tercer condicional. Debates con argumentos."},
+ 44:{t:"Meta Mes 11 — Naturalidad",d:"wish/if only, deducción. Series SIN subtítulos. Suenas natural."},
+ 48:{t:"🏆🎉 NIVEL B2 — FLUIDEZ",d:"Conversas con total facilidad sobre cualquier tema. ~4.000 palabras. ¡Objetivo cumplido!"}
+};
+
+//==================== BANCO DE CONTENIDO (A1, semanas 1-12) ====================
+// vocab: [en, es, emoji?]   ·   gram: {q, o:[opciones], a:indiceCorrecto}
+const VOCAB = {
+ 0:[["one","uno","1️⃣"],["two","dos","2️⃣"],["three","tres","3️⃣"],["four","cuatro","4️⃣"],["five","cinco","5️⃣"],["six","seis","6️⃣"],["seven","siete","7️⃣"],["ten","diez","🔟"],["hello","hola","👋"],["goodbye","adiós","✋"]],
+ 1:[["mother","madre","👩"],["father","padre","👨"],["brother","hermano","👦"],["sister","hermana","👧"],["baby","bebé","👶"],["family","familia","👨‍👩‍👧"],["red","rojo","🔴"],["blue","azul","🔵"],["green","verde","🟢"],["yellow","amarillo","🟡"],["black","negro","⚫"],["white","blanco","⚪"]],
+ 2:[["eat","comer","🍽️"],["drink","beber","🥤"],["sleep","dormir","😴"],["work","trabajar","💼"],["read","leer","📖"],["write","escribir","✍️"],["walk","caminar","🚶"],["run","correr","🏃"],["study","estudiar","📚"],["wake up","despertar","⏰"]],
+ 3:[["water","agua","💧"],["milk","leche","🥛"],["bread","pan","🍞"],["apple","manzana","🍎"],["egg","huevo","🥚"],["coffee","café","☕"],["tea","té","🍵"],["rice","arroz","🍚"],["fish","pescado","🐟"],["meat","carne","🥩"],["cheese","queso","🧀"],["banana","plátano","🍌"]],
+ 4:[["house","casa","🏠"],["door","puerta","🚪"],["window","ventana","🪟"],["bed","cama","🛏️"],["kitchen","cocina","🍳"],["bathroom","baño","🚽"],["chair","silla","🪑"],["table","mesa","🍽️"],["sofa","sofá","🛋️"],["key","llave","🔑"],["lamp","lámpara","💡"]],
+ 5:[["hand","mano","✋"],["eye","ojo","👁️"],["ear","oreja","👂"],["nose","nariz","👃"],["mouth","boca","👄"],["foot","pie","🦶"],["shirt","camisa","👕"],["shoes","zapatos","👟"],["hat","sombrero","🎩"],["dress","vestido","👗"],["coat","abrigo","🧥"]],
+ 6:[["city","ciudad","🏙️"],["street","calle","🛣️"],["car","coche","🚗"],["bus","autobús","🚌"],["train","tren","🚆"],["school","escuela","🏫"],["hospital","hospital","🏥"],["shop","tienda","🏪"],["park","parque","🏞️"],["left","izquierda","⬅️"],["right","derecha","➡️"]],
+ 7:[["doctor","médico","👨‍⚕️"],["teacher","profesor","👩‍🏫"],["police","policía","👮"],["cook","cocinero","👨‍🍳"],["farmer","granjero","👨‍🌾"],["nurse","enfermera","👩‍⚕️"],["driver","conductor","🚕"],["pilot","piloto","👨‍✈️"],["artist","artista","👨‍🎨"],["firefighter","bombero","👨‍🚒"]],
+ 8:[["sun","sol","☀️"],["rain","lluvia","🌧️"],["snow","nieve","❄️"],["cloud","nube","☁️"],["wind","viento","🌬️"],["hot","calor","🔥"],["cold","frío","🧊"],["summer","verano","🏖️"],["winter","invierno","⛄"],["spring","primavera","🌷"],["autumn","otoño","🍂"]],
+ 9:[["music","música","🎵"],["football","fútbol","⚽"],["guitar","guitarra","🎸"],["paint","pintar","🎨"],["dance","bailar","💃"],["swim","nadar","🏊"],["game","juego","🎮"],["book","libro","📚"],["movie","película","🎬"],["bike","bici","🚲"]],
+ 10:[["clock","reloj","🕐"],["day","día","📅"],["night","noche","🌙"],["morning","mañana","🌅"],["week","semana","📆"],["month","mes","🗓️"],["year","año","🎆"],["sun","sol","☀️"],["moon","luna","🌙"],["star","estrella","⭐"]],
+ 11:[["money","dinero","💰"],["coin","moneda","🪙"],["card","tarjeta","💳"],["price","precio","🏷️"],["buy","comprar","🛒"],["sell","vender","🤝"],["cheap","barato","👍"],["expensive","caro","💎"],["shop","tienda","🏬"],["bag","bolsa","🛍️"]]
+};
+const GRAM = {
+ 0:[{q:"I ___ Paco.",o:["am","is","are"],a:0},{q:"She ___ happy.",o:["am","is","are"],a:1},{q:"They ___ students.",o:["am","is","are"],a:2},{q:"He ___ from Spain.",o:["am","is","are"],a:1}],
+ 1:[{q:"I have ___ apple.",o:["a","an","the"],a:1},{q:"It is ___ red car.",o:["a","an"],a:0},{q:"She is ___ teacher.",o:["a","an"],a:0}],
+ 2:[{q:"He ___ coffee every day.",o:["drink","drinks"],a:1},{q:"I ___ to school.",o:["go","goes"],a:0},{q:"She ___ books.",o:["read","reads"],a:1}],
+ 3:[{q:"___ you like tea?",o:["Do","Does"],a:0},{q:"He ___ not eat meat.",o:["do","does"],a:1},{q:"They ___ not drink coffee.",o:["do","does"],a:0}],
+ 4:[{q:"There ___ a table.",o:["is","are"],a:0},{q:"There ___ three chairs.",o:["is","are"],a:1},{q:"There ___ a window.",o:["is","are"],a:0}],
+ 5:[{q:"I ___ two brothers.",o:["have got","has got"],a:0},{q:"She ___ blue eyes.",o:["have got","has got"],a:1}],
+ 6:[{q:"The cat is ___ the box.",o:["in","on"],a:0},{q:"The book is ___ the table.",o:["in","on"],a:1},{q:"The dog is ___ the chair.",o:["under","on"],a:0}],
+ 7:[{q:"I ___ swim.",o:["can","cans"],a:0},{q:"___ you cook?",o:["Can","Does"],a:0}],
+ 8:[{q:"She ___ reading.",o:["is","are"],a:0},{q:"They ___ playing.",o:["is","are"],a:1}],
+ 9:[{q:"I ___ go to the gym.",o:["always","am"],a:0},{q:"She is ___ late.",o:["never","do"],a:0}],
+ 10:[{q:"I love ___.",o:["she","her"],a:1},{q:"Call ___.",o:["he","him"],a:1}],
+ 11:[{q:"___ the door, please.",o:["Open","Opens"],a:0},{q:"This is ___.",o:["cheap","cheaps"],a:0}]
+};
+// Banco global (para semanas sin contenido específico) y refuerzo
+const GLOBAL_VOCAB = [["time","tiempo","⏳"],["people","gente","👥"],["work","trabajo","💼"],["world","mundo","🌍"],["friend","amigo","🧑‍🤝‍🧑"],["food","comida","🍲"],["water","agua","💧"],["house","casa","🏠"],["money","dinero","💰"],["book","libro","📚"],["car","coche","🚗"],["phone","teléfono","📱"],["country","país","🏳️"],["city","ciudad","🏙️"],["family","familia","👨‍👩‍👧"],["health","salud","❤️"],["job","empleo","💼"],["music","música","🎵"],["light","luz","💡"],["door","puerta","🚪"]];
+const GLOBAL_GRAM = [{q:"Yesterday I ___ to the cinema.",o:["go","went"],a:1},{q:"If it rains, I ___ stay home.",o:["will","would"],a:0},{q:"I have ___ been to London.",o:["never","not"],a:0},{q:"She is taller ___ me.",o:["than","that"],a:0},{q:"This is the ___ film ever.",o:["best","better"],a:0},{q:"I'm interested ___ music.",o:["in","on"],a:0}];
+
+function weekVocab(w){ return VOCAB[w] || GLOBAL_VOCAB; }
+function weekGram(w){ return GRAM[w] || GLOBAL_GRAM; }
+// Banco grande de vocabulario común (para que 20 min NO repitan)
+const A1_BANK=[
+ ["man","hombre","👨"],["woman","mujer","👩"],["boy","niño","👦"],["girl","niña","👧"],["child","niño/a","🧒"],["people","gente","👥"],["friend","amigo","🧑‍🤝‍🧑"],
+ ["dog","perro","🐶"],["cat","gato","🐱"],["bird","pájaro","🐦"],["horse","caballo","🐴"],["cow","vaca","🐮"],["pig","cerdo","🐷"],["duck","pato","🦆"],
+ ["bus","autobús","🚌"],["plane","avión","✈️"],["boat","barco","⛵"],["bike","bici","🚲"],["road","carretera","🛣️"],
+ ["pen","bolígrafo","🖊️"],["paper","papel","📄"],["phone","teléfono","📱"],["computer","ordenador","💻"],["clock","reloj","🕐"],["bag","bolsa","🛍️"],
+ ["orange","naranja","🍊"],["grape","uva","🍇"],["lemon","limón","🍋"],["carrot","zanahoria","🥕"],["potato","patata","🥔"],["chicken","pollo","🍗"],["soup","sopa","🍲"],["cake","tarta","🍰"],
+ ["tree","árbol","🌳"],["flower","flor","🌸"],["beach","playa","🏖️"],["mountain","montaña","⛰️"],["river","río","🏞️"],["sea","mar","🌊"],
+ ["happy","feliz","😀"],["sad","triste","😢"],["angry","enfadado","😠"],["tired","cansado","😴"],["big","grande","🐘"],["small","pequeño","🐭"],["fast","rápido","⚡"],["slow","lento","🐢"],
+ ["good","bueno","👍"],["bad","malo","👎"],["new","nuevo","🆕"],["old","viejo","👴"],["easy","fácil","🙂"],["hard","difícil","😣"],
+ ["eat","comer","🍴"],["drink","beber","🥤"],["sleep","dormir","😴"],["go","ir","🚶"],["come","venir","🙋"],["see","ver","👀"],["speak","hablar","🗣️"],["listen","escuchar","👂"],
+ ["play","jugar","🎮"],["love","amar","❤️"],["want","querer","🙏"],["help","ayudar","🤝"],["open","abrir","🔓"],["close","cerrar","🔒"],["buy","comprar","🛒"],["give","dar","🎁"],
+ ["today","hoy","📅"],["tomorrow","mañana","➡️"],["yesterday","ayer","⬅️"],["now","ahora","⏰"],["here","aquí","📍"],["there","allí","📌"]
+];
+const A2_BANK=[
+ ["head","cabeza","🧠"],["hair","pelo","💇"],["tooth","diente","🦷"],["arm","brazo","💪"],["leg","pierna","🦵"],["heart","corazón","❤️"],["face","cara","😊"],["finger","dedo","👆"],
+ ["trousers","pantalón","👖"],["jacket","chaqueta","🧥"],["sock","calcetín","🧦"],["glasses","gafas","👓"],["watch","reloj","⌚"],["ring","anillo","💍"],["scarf","bufanda","🧣"],
+ ["garden","jardín","🌷"],["wall","pared","🧱"],["floor","suelo","⬇️"],["roof","tejado","🏠"],["stairs","escaleras","🪜"],["mirror","espejo","🪞"],["towel","toalla","🧻"],
+ ["office","oficina","🏢"],["market","mercado","🛒"],["bank","banco","🏦"],["airport","aeropuerto","🛫"],["station","estación","🚉"],["library","biblioteca","📚"],["church","iglesia","⛪"],
+ ["weather","tiempo","🌦️"],["storm","tormenta","⛈️"],["fog","niebla","🌫️"],["ice","hielo","🧊"],["fire","fuego","🔥"],["earth","tierra","🌍"],["air","aire","💨"],
+ ["nurse","enfermero","👩‍⚕️"],["student","estudiante","🎓"],["waiter","camarero","🧑‍🍳"],["singer","cantante","🎤"],["writer","escritor","✍️"],["king","rey","🤴"],["queen","reina","👸"],
+ ["afraid","asustado","😨"],["surprised","sorprendido","😲"],["bored","aburrido","🥱"],["excited","emocionado","🤩"],["calm","tranquilo","😌"],["proud","orgulloso","😎"],["shy","tímido","😳"],
+ ["strong","fuerte","💪"],["weak","débil","🤕"],["clean","limpio","🧼"],["dirty","sucio","🧹"],["full","lleno","🈵"],["empty","vacío","🈳"],["heavy","pesado","🏋️"],["soft","suave","🧸"],
+ ["beautiful","bonito","😍"],["ugly","feo","🙈"],["expensive","caro","💎"],["important","importante","❗"],["dangerous","peligroso","⚠️"],["famous","famoso","🌟"],["funny","gracioso","😂"],
+ ["begin","empezar","▶️"],["finish","terminar","🏁"],["learn","aprender","📚"],["teach","enseñar","🧑‍🏫"],["remember","recordar","🧠"],["forget","olvidar","🤔"],["understand","entender","💡"],["think","pensar","💭"],
+ ["bring","traer","📦"],["carry","llevar","🧳"],["catch","atrapar","🧤"],["throw","lanzar","🤾"],["build","construir","🏗️"],["break","romper","💥"],["fix","arreglar","🔧"],["wash","lavar","🧽"],
+ ["travel","viajar","🧳"],["arrive","llegar","🛬"],["leave","irse","👋"],["wait","esperar","⏳"],["meet","conocer","🤝"],["visit","visitar","🚪"],["change","cambiar","🔄"],["choose","elegir","✅"],
+ ["always","siempre","🔁"],["never","nunca","🚫"],["often","a menudo","🔂"],["sometimes","a veces","🔃"],["early","temprano","🌅"],["late","tarde","🌙"],["soon","pronto","⏰"],["together","juntos","🤝"],
+ ["because","porque","➡️"],["also","también","➕"],["maybe","quizás","🤷"],["really","de verdad","‼️"],["everyone","todos","👥"],["nothing","nada","🚫"],["everything","todo","🌐"],["something","algo","❓"]
+];
+// Banco grande de gramática A1 (para que la sección NO repita)
+const GRAM_BANK=[
+ {q:"I ___ a student.",o:["am","is","are"],a:0},{q:"You ___ my friend.",o:["am","is","are"],a:2},{q:"He ___ tall.",o:["am","is","are"],a:1},{q:"We ___ happy.",o:["am","is","are"],a:2},{q:"It ___ a cat.",o:["am","is","are"],a:1},{q:"They ___ at home.",o:["am","is","are"],a:2},{q:"She ___ a doctor.",o:["am","is","are"],a:1},{q:"___ you ready?",o:["Are","Is"],a:0},{q:"___ she your sister?",o:["Is","Are"],a:0},{q:"I ___ not tired.",o:["am","is"],a:0},
+ {q:"I see ___ elephant.",o:["a","an"],a:1},{q:"She has ___ umbrella.",o:["a","an"],a:1},{q:"It's ___ apple.",o:["a","an"],a:1},{q:"He is ___ teacher.",o:["a","an"],a:0},{q:"I want ___ orange.",o:["a","an"],a:1},{q:"This is ___ book.",o:["a","an"],a:0},{q:"___ sun is hot.",o:["The","A"],a:0},
+ {q:"She ___ tea.",o:["drink","drinks"],a:1},{q:"They ___ football.",o:["play","plays"],a:0},{q:"He ___ in London.",o:["live","lives"],a:1},{q:"I ___ English.",o:["study","studies"],a:0},{q:"My cat ___ milk.",o:["like","likes"],a:1},{q:"We ___ early.",o:["wake","wakes"],a:0},
+ {q:"___ she like coffee?",o:["Do","Does"],a:1},{q:"___ they live here?",o:["Do","Does"],a:0},{q:"He ___ not eat fish.",o:["do","does"],a:1},{q:"I ___ not know.",o:["do","does"],a:0},
+ {q:"There ___ a book.",o:["is","are"],a:0},{q:"There ___ two cats.",o:["is","are"],a:1},{q:"I have three ___.",o:["box","boxes"],a:1},{q:"She has two ___.",o:["baby","babies"],a:1},{q:"Look at the ___.",o:["childs","children"],a:1},
+ {q:"I ___ a dog.",o:["have got","has got"],a:0},{q:"She ___ blue eyes.",o:["have got","has got"],a:1},{q:"They ___ a car.",o:["have got","has got"],a:0},
+ {q:"The cat is ___ the table.",o:["on","in"],a:0},{q:"The keys are ___ the bag.",o:["in","on"],a:0},{q:"The ball is ___ the box.",o:["under","on"],a:0},{q:"She lives ___ Spain.",o:["in","on"],a:0},{q:"The class is ___ Monday.",o:["on","in"],a:0},
+ {q:"I ___ swim.",o:["can","cans"],a:0},{q:"___ you help me?",o:["Can","Do"],a:0},{q:"He ___ not drive.",o:["can","cans"],a:0},{q:"Birds ___ fly.",o:["can","cans"],a:0},
+ {q:"She ___ reading.",o:["is","are"],a:0},{q:"They ___ playing.",o:["is","are"],a:1},{q:"I ___ working.",o:["am","is"],a:0},{q:"He is ___ TV.",o:["watch","watching"],a:1},
+ {q:"I ___ go to school by bus.",o:["always","am"],a:0},{q:"She is ___ late.",o:["never","do"],a:0},{q:"We ___ play tennis.",o:["sometimes","is"],a:0},
+ {q:"I love ___.",o:["she","her"],a:1},{q:"Call ___.",o:["he","him"],a:1},{q:"Look at ___.",o:["they","them"],a:1},{q:"Give it to ___.",o:["I","me"],a:1},
+ {q:"___ the door, please.",o:["Open","Opens"],a:0},{q:"___ quiet, please.",o:["Be","Is"],a:0},{q:"Don't ___ late.",o:["be","is"],a:0},
+ {q:"A car is ___ than a bike.",o:["faster","fast"],a:0},{q:"This book is ___ than that one.",o:["better","good"],a:0}
+];
+function dedupeVocab(arr){ const s={},out=[]; arr.forEach(x=>{ if(x&&!s[x[0]]){s[x[0]]=1;out.push(x);} }); return out; }
+const ALLVOCAB=dedupeVocab([].concat.apply([],Object.keys(VOCAB).map(k=>VOCAB[k])).concat(GLOBAL_VOCAB,A1_BANK,A2_BANK));
+const EN2ES={}; ALLVOCAB.forEach(x=>{ if(!EN2ES[x[0]])EN2ES[x[0]]=x[1]; });
+function vocabPool(week){ const ph=phaseOfWeek(week+1); let arr=[]; for(let w=ph.w[0]-1;w<=week;w++)arr=arr.concat(weekVocab(w)); arr=arr.concat(A1_BANK,A2_BANK); return dedupeVocab(arr); }
+function gramPool(week){ const ph=phaseOfWeek(week+1); let arr=[]; for(let w=ph.w[0]-1;w<=week;w++){ weekGram(w).forEach(g=>arr.push({g:g,w:w})); } GLOBAL_GRAM.concat(GRAM_BANK).forEach(g=>arr.push({g:g,w:week})); const s={},out=[]; arr.forEach(x=>{ if(!s[x.g.q]){s[x.g.q]=1;out.push(x);} }); return out; }
+function seenHas(d,key){ return (d.seen||[]).indexOf(key)>=0; }
+
+//==================== UTILIDADES ====================
+function phaseOfWeek(w){return PHASES.find(p=>w>=p.w[0]&&w<=p.w[1]);}
+function fmt(d){return d.toLocaleDateString('es-ES',{weekday:'long',day:'numeric',month:'long',year:'numeric'});}
+function fmtShort(d){return d.toLocaleDateString('es-ES',{day:'numeric',month:'short'});}
+function dateOfDay(i){const d=new Date(START);d.setDate(d.getDate()+i);return d;}
+function todayIndex(){const t=new Date();t.setHours(0,0,0,0);return Math.floor((t-START)/86400000);}
+const ti=todayIndex();
+function norm(s){return (s||'').toLowerCase().trim().replace(/[.,!?;:]/g,'').replace(/\s+/g,' ');}
+function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+function fmtClock(sec){const m=Math.floor(sec/60),s=sec%60;return (m<100?('0'+m).slice(-2):m)+':'+('0'+s).slice(-2);}
+
+let store = JSON.parse(localStorage.getItem(STORE_KEY())||'{}');
+function ensureStore(){ if(!store.days)store.days={}; if(!store.mastery)store.mastery={}; if(!store.reinforce)store.reinforce=[]; if(!store.exams)store.exams={}; if(!store.levels)store.levels={}; if(!store.profile)store.profile={}; }
+ensureStore();
+function save(){ localStorage.setItem(STORE_KEY(),JSON.stringify(store)); if(CLOUD_ON&&sessionUser)schedulePush(); }
+
+//==================== NUBE ====================
+let pushTimer=null;
+function setSync(state,txt){
+  const b=document.getElementById('syncbar'); if(!b)return;
+  if(!CLOUD_ON){b.innerHTML='<span class="syncdot off"></span> Modo local';return;}
+  const cls=state==='ok'?'ok':state==='err'?'err':state==='off'?'off':'';
+  const extra = sessionUser?` · <a href="#" id="logoutLink" style="color:var(--muted)">salir (${cloudDisplayName})</a>`:'';
+  b.innerHTML=`<span class="syncdot ${cls}"></span> ${txt}${extra}`;
+  const ll=document.getElementById('logoutLink'); if(ll) ll.onclick=(e)=>{e.preventDefault();doLogout();};
+}
+function schedulePush(){ if(!CLOUD_ON||!sessionUser)return; setSync('','Guardando…'); clearTimeout(pushTimer); pushTimer=setTimeout(cloudPush,900); }
+async function cloudPush(){
+  if(!supa||!sessionUser)return;
+  try{ const {error}=await supa.from('progress').upsert({user_id:sessionUser.id,email:sessionUser.email,display_name:cloudDisplayName,data:store,updated_at:new Date().toISOString()}); if(error)throw error; setSync('ok','Sincronizado ✔'); }
+  catch(e){ setSync('err','Sin conexión · guardado local'); }
+}
+async function cloudPull(){
+  if(!supa||!sessionUser)return;
+  try{ const {data,error}=await supa.from('progress').select('data').eq('user_id',sessionUser.id).maybeSingle(); if(error)throw error;
+    if(data&&data.data){ store=data.data; ensureStore(); localStorage.setItem(STORE_KEY(),JSON.stringify(store)); } setSync('ok','Sincronizado ✔'); }
+  catch(e){ setSync('err','No se pudo leer la nube · uso copia local'); }
+}
+async function initAuth(){
+  try{ const {data:{session}}=await supa.auth.getSession(); if(session)await onLogin(session); else showLogin();
+    supa.auth.onAuthStateChange((_e,sess)=>{ if(sess&&(!sessionUser||sessionUser.id!==sess.user.id))onLogin(sess); }); }
+  catch(e){ setSync('err','Error de conexión'); showLogin(); }
+}
+function showLogin(){document.getElementById('loginOverlay').style.display='flex';}
+function hideLogin(){document.getElementById('loginOverlay').style.display='none';}
+async function onLogin(session){
+  sessionUser=session.user; currentUser=sessionUser.email;
+  cloudDisplayName=(sessionUser.user_metadata&&sessionUser.user_metadata.name)||sessionUser.email.split('@')[0];
+  saveUsers(); hideLogin();
+  store=JSON.parse(localStorage.getItem(STORE_KEY())||'{}'); ensureStore();
+  setSync('','Cargando tu progreso…'); await cloudPull();
+  viewDay=Math.max(0,Math.min(DAYS-1,ti<0?0:ti));
+  renderTop(); renderDay(); renderProgress();
+  if(sessionUser.email.toLowerCase()===ADMIN_EMAIL.toLowerCase()){ document.getElementById('navPanel').style.display=''; renderDash(); }
+  const sb2=document.getElementById('securityBox'); if(sb2) sb2.style.display='';
+  renderAgeRow(); ensureProfile();
+}
+async function doLogout(){ try{await supa.auth.signOut();}catch(e){} sessionUser=null; location.reload(); }
+function loginCreds(){ return {email:(document.getElementById('loginEmail').value||'').trim(), pass:document.getElementById('loginPass').value||''}; }
+document.getElementById('loginBtn').onclick=async()=>{
+  const {email,pass}=loginCreds(); const m=document.getElementById('loginMsg');
+  if(!email||email.indexOf('@')<1){m.style.color='var(--danger)';m.textContent='Escribe un email válido.';return;}
+  if(pass.length<6){m.style.color='var(--danger)';m.textContent='La contraseña tiene mínimo 6 caracteres.';return;}
+  m.style.color='var(--muted)';m.textContent='Entrando…';
+  try{
+    let r=await supa.auth.signInWithPassword({email,password:pass});
+    if(!r.error) return;
+    if(!/Invalid login/i.test(r.error.message)) throw r.error;
+    m.textContent='Creando tu cuenta…';
+    const s=await supa.auth.signUp({email,password:pass});
+    if(s.error){ if(/already|registered|exists/i.test(s.error.message)){m.style.color='var(--danger)';m.textContent='Esa cuenta ya existe y la contraseña no coincide. Revísala.';} else throw s.error; return; }
+    if(s.data.session){ m.style.color='var(--ok)';m.textContent='✅ Cuenta creada. Entrando…'; return; }
+    const r2=await supa.auth.signInWithPassword({email,password:pass});
+    if(r2.error){ m.style.color='var(--warn)';m.textContent='Cuenta creada. Pulsa "Entrar" otra vez.'; }
+  }catch(e){ m.style.color='var(--danger)';m.textContent='Error: '+e.message; }
+};
+['loginEmail','loginPass'].forEach(id=>document.getElementById(id).addEventListener('keydown',e=>{if(e.key==='Enter')document.getElementById('loginBtn').click();}));
+
+//==================== MASTERY / REFUERZO ====================
+function masteryGet(key){ if(!store.mastery[key]) store.mastery[key]={s:0,c:0,w:0,ok:0}; return store.mastery[key]; }
+function recordResult(key,label,correct){
+  const m=masteryGet(key); m.s++; if(correct){m.c++;m.ok++;} else {m.w++;m.ok=0;}
+  // refuerzo
+  const ri=store.reinforce.findIndex(x=>x.key===key);
+  if(!correct){ if(ri<0) store.reinforce.push({key,label}); }
+  else if(m.ok>=2 && ri>=0){ store.reinforce.splice(ri,1); } // dominado
+}
+function weakTopics(data){
+  data=data||store; if(!data.reinforce) return [];
+  return data.reinforce.map(x=>x.label);
+}
+
+//==================== GENERADOR DE EJERCICIOS ====================
+// tipos unificados: t:'opts' (opción múltiple, emoji:true => emojis grandes) | t:'text' (escribir)
+function makeVocabExercise(item,week,kind){
+  const pool=ALLVOCAB; const en=item[0],es=item[1],emo=item[2];
+  const distract=(byEmoji)=>shuffle(pool.filter(x=>x[0]!==en && (!byEmoji||x[2]))).slice(0,3);
+  if(kind==='pic' && emo){
+    const opts=shuffle([item].concat(distract(true)));
+    return {t:'opts',emoji:true,topic:en,label:es,say:en,sayPre:true,q:'¿Qué imagen es "'+en+'"? ('+es+')',opts:opts.map(o=>o[2]),a:opts.findIndex(o=>o[0]===en)};
+  }
+  if(kind==='picword' && emo){
+    const opts=shuffle([item].concat(distract(false)));
+    return {t:'opts',topic:en,label:es,say:en,q:emo+'  ¿Qué palabra en inglés es?',opts:opts.map(o=>o[0]),a:opts.findIndex(o=>o[0]===en)};
+  }
+  if(kind==='es2en'){
+    const opts=shuffle([item].concat(distract(false)));
+    return {t:'opts',topic:en,label:es,say:en,q:'¿Cómo se dice "'+es+'" en inglés?',opts:opts.map(o=>o[0]),a:opts.findIndex(o=>o[0]===en)};
+  }
+  if(kind==='listen'){
+    return {t:'text',topic:en,label:es,say:en,sayPre:true,listen:true,a:en,q:'🎧 Escucha y escribe la palabra en inglés',hint:es};
+  }
+  if(kind==='spell'){
+    return {t:'text',topic:en,label:es,say:en,a:en,q:'Escribe en inglés: "'+es+'"'+(emo?' '+emo:'')};
+  }
+  // choice EN->ES (por defecto)
+  const opts=shuffle([item].concat(distract(false)));
+  return {t:'opts',topic:en,label:es,say:en,sayPre:true,q:'¿Qué significa "'+en+'"?',opts:opts.map(o=>o[1]),a:opts.findIndex(o=>o[0]===en)};
+}
+function optsSig(o){ return o.map(x=>(''+x).toLowerCase()).sort().join('|'); } // concepto: agrupa por sus opciones (a/an, am/is/are...)
+function gramExplain(q,opts,ansTxt){
+  const ql=(q||'').toLowerCase().trim(); const lo=opts.map(o=>(''+o).toLowerCase()); const inc=w=>lo.indexOf(w)>=0;
+  const A='La forma correcta es "'+ansTxt+'". ';
+  if((/^_{2,}/.test(ql)||/don't __/.test(ql)) && !/\?/.test(q) && (inc('open')||inc('opens')||inc('be')||inc('is')||inc('do'))) return A+'Es un imperativo (una orden o instrucción): se usa el verbo base sin sujeto — "Open the door", "Be quiet".';
+  if(/\bthan\b/.test(ql)||inc('faster')||inc('better')) return A+'Comparativo: adjetivo + -er (fast→faster) o irregular (good→better), seguido de "than".';
+  if(lo.some(o=>/ing$/.test(o))) return A+'Presente continuo: be (am/is/are) + verbo en -ing ("is watching"), para algo que ocurre ahora.';
+  if(inc('am')||inc('is')||inc('are')){
+    if(/\b[a-z]+ing\b/.test(ql)) return A+'Presente continuo: be + verbo -ing. I→am, he/she/it→is, you/we/they→are.';
+    if(/there/.test(ql)) return A+'"There is" + singular (un objeto); "There are" + plural (varios).';
+    return A+'Verbo TO BE: con I→am, con he/she/it (singular)→is, con you/we/they (plural)→are.';
+  }
+  if(inc('a')&&inc('an')) return A+'Artículos: "a" antes de sonido consonante (a dog); "an" antes de sonido vocal (an apple, an hour).';
+  if(inc('the')) return A+'"The" para algo concreto o único (the sun); "a/an" para algo no específico.';
+  if(inc('do')&&inc('does')) return A+'Preguntas y negativas del presente: "does" con he/she/it; "do" con I/you/we/they.';
+  if(inc('has got')||inc('have got')) return A+'"have got" con I/you/we/they; "has got" con he/she/it.';
+  if(inc('can')||inc('cans')) return A+'"can" es un verbo modal: igual para todos (I can, he can) y nunca lleva -s.';
+  if(['always','never','sometimes','often','usually'].some(f=>inc(f))) return A+'Los adverbios de frecuencia (always, never, sometimes…) van antes del verbo principal.';
+  if(['her','him','them','me','us'].some(p=>inc(p))) return A+'Pronombres de objeto (me, him, her, us, them) van tras el verbo o preposición; los de sujeto (I, he, she, we, they) van antes del verbo.';
+  if(['in','on','under','at'].some(p=>inc(p))) return A+'Preposiciones de lugar: in (dentro), on (encima/sobre), under (debajo). Con días se usa "on" (on Monday).';
+  if(opts.length===2){ const a=lo[0],b=lo[1]; if(b===a+'s'||b===a+'es'||(a==='go'&&b==='goes')||(a.slice(-1)==='y'&&b===a.slice(0,-1)+'ies')||a===b+'s') return A+'Presente simple: con he/she/it el verbo añade -s/-es (he drinks, she goes); con I/you/we/they no.'; }
+  if(inc('children')||inc('boxes')||inc('babies')||inc('childs')) return A+'Plural de los nombres: normalmente se añade -s/-es (box→boxes); algunos son irregulares (child→children).';
+  return A+'Fíjate en el sujeto de la frase y aplica la regla de esta semana.';
+}
+function reinKind(it){ const ks=it[2]?['pic','picword','choice','es2en','listen','spell']:['choice','es2en','listen','spell']; return ks[Math.floor(Math.random()*ks.length)]; }
+function makeGramExercise(g,week){
+  return {t:'opts',topic:'gram:'+optsSig(g.o),seenKey:'g:'+week+':'+g.q,label:'Gramática ('+g.o.join('/')+')',q:g.q,opts:g.o,a:g.a,gram:true};
+}
+function pickKind(it,idx,dow){
+  const e=!!it[2]; const c=(idx+dow)%6;
+  if(e && c===0) return 'pic';
+  if(e && c===1) return 'picword';
+  if(c===2) return 'listen';
+  if(c===3) return 'es2en';
+  if(c===4) return 'spell';
+  return 'choice';
+}
+function isExamDay(i){ const w1=Math.floor(i/7)+1; return (MILES[w1] && (i%7===6)) ? w1 : 0; }
+function buildExam(W){ // W = nº de semana 1-based
+  const ph=phaseOfWeek(W); let vl=[],gl=[];
+  for(let w=ph.w[0]-1; w<=W-1; w++){ vl=vl.concat(weekVocab(w)); gl=gl.concat(weekGram(w)); }
+  let set=[]; const kinds=['choice','es2en','pic','picword','listen','spell'];
+  shuffle(vl).slice(0,8).forEach((it,k)=>set.push(makeVocabExercise(it,W-1,kinds[k%kinds.length])));
+  shuffle(gl).slice(0,5).forEach(g=>set.push(makeGramExercise(g,W-1)));
+  set=shuffle(set); set.forEach(e=>e.exam=true);
+  return set;
+}
+function buildDaySet(i){
+  if(isExamDay(i)) return buildExam(isExamDay(i));
+  const week=Math.floor(i/7);
+  const d=dayObj(i);
+  const vocab=weekVocab(week), gram=weekGram(week);
+  d.batches=(d.batches||0)+1;
+  const recent=(d.seen||[]).slice(-6); // evita repetir lo recién visto
+  let set=[];
+  // 1) refuerzo: 1 ítem débil, con espaciado (no visto hace poco)
+  const weak=(store.reinforce||[]).filter(r=>!recent.includes(r.key));
+  if(weak.length){
+    const r=weak[Math.floor(Math.random()*weak.length)];
+    if(r.key.indexOf('gram:')===0){ const w=parseInt(r.key.split(':')[1]); const gg=weekGram(isNaN(w)?week:w); const g=gg[Math.floor(Math.random()*gg.length)]; const e=makeGramExercise(g,isNaN(w)?week:w); e.reinforce=true; set.push(e); }
+    else { const all=Object.values(VOCAB).flat().concat(GLOBAL_VOCAB); const item=all.find(x=>x[0]===r.key); if(item){ const e=makeVocabExercise(item,week,item[2]?'pic':'choice'); e.reinforce=true; set.push(e); } }
+  }
+  // 2) vocabulario desde una COLA BARAJADA: recorre todo el banco antes de repetir
+  let picked=0, guard=0;
+  while(picked<4 && guard<60){ guard++;
+    if(!d.vqueue || !d.vqueue.length) d.vqueue=shuffle(vocab.map((_,idx)=>idx));
+    const idx=d.vqueue.shift(); const it=vocab[idx];
+    if(recent.includes(it[0])) continue;
+    set.push(makeVocabExercise(it,week,pickKind(it,picked,d.batches))); picked++;
+  }
+  // 3) gramática desde su propia cola barajada (2)
+  for(let k=0;k<2 && gram.length;k++){ if(!d.gqueue || !d.gqueue.length) d.gqueue=shuffle(gram.map((_,idx)=>idx)); set.push(makeGramExercise(gram[d.gqueue.shift()],week)); }
+  return set;
+}
+
+//==================== AGENDA DIARIA (tiempos por actividad) ====================
+const AGENDA=[
+ {k:'immersive',ic:'🎧',label:'Escucha inmersiva (como un bebé)',mins:8,type:'immersive'},
+ {k:'pron',ic:'🎙️',label:'Pronunciación (habla y te corrijo)',mins:12,type:'pron'},
+ {k:'vocab',ic:'🧠',label:'Vocabulario (juegos)',mins:20,type:'vocab'},
+ {k:'gram',ic:'📐',label:'Gramática (ejercicios)',mins:16,type:'gram'},
+ {k:'reading',ic:'📖',label:'Lectura y comprensión',mins:10,type:'reading'},
+ {k:'claude',ic:'🗣️',label:'Conversar con Claude',mins:22,type:'guided'},
+ {k:'writing',ic:'✍️',label:'Escritura',mins:12,type:'guided'},
+ {k:'review',ic:'🔁',label:'Repaso y refuerzo',mins:10,type:'review'},
+ {k:'series',ic:'🎬',label:'Serie o vídeo en inglés',mins:10,type:'guided'}
+]; // total = 120 min
+
+// ===== Perfil por edad (personaliza series, lecturas y temas) =====
+function ageOf(){ return (store.profile && store.profile.age) || 'adult'; }
+const AGE_LABEL={kid:'Niño/a (8-12)',teen:'Joven (13-17)',adult:'Adulto (18+)'};
+// SERIES por edad × fase (1-4)
+const SERIES_BY_AGE={
+ kid:["Peppa Pig, Bluey, Maya the Bee","Gravity Falls, Phineas and Ferb (subt. inglés)","Avatar: The Last Airbender, Pokémon (subt. inglés)","Documentales infantiles BBC, Gravity Falls SIN subtítulos"],
+ teen:["Extra English, vídeos fáciles de YouTubers","Friends, Brooklyn Nine-Nine (subt. inglés)","Stranger Things, Wednesday (subt. inglés)","The Office, Ted Lasso SIN subtítulos, TED-Ed"],
+ adult:["BBC Learning English, Extra English","Friends, Modern Family (subt. inglés)","The Office, The Crown (subt. inglés)","Ted Lasso, documentales BBC, TED Talks y noticias"]
+};
+// Lecturas por edad × fase
+const READING_BY_AGE={
+ kid:[
+  "Hi! My name is Leo. I am nine years old. I have a small dog called Max. Max is brown and white. Every day we play in the park. I like apples, ice cream and the colour green. My best friend is Tom. We go to school together.",
+  "Yesterday was my birthday. My mum made a big chocolate cake. My friends came to my house and we played games. I got a new bike and a football. We ate pizza and sang songs. It was the best day ever!",
+  "Dolphins are very clever animals. They live in the sea and they can swim very fast. Dolphins talk to each other with special sounds. They like to play and jump out of the water. Many people think dolphins are friendly and kind.",
+  "Imagine you could have any superpower. Some kids want to fly, others want to be invisible. A superpower would be fun, but real heroes are different. A real hero is someone who helps other people, tells the truth and is brave when things are difficult."
+ ],
+ teen:[
+  "Hi, I'm Sara. I'm fifteen and I love music and video games. After school I usually meet my friends or watch series on my phone. My favourite subject is art. At the weekend I play basketball and chat online with my friends.",
+  "Last summer my family travelled to Italy. We visited old cities, ate amazing pizza and swam in the sea. I took hundreds of photos for my social media. The best part was making new friends from other countries. I can't wait to go back.",
+  "Social media is a huge part of teenage life today. It helps us stay in touch with friends and discover new things. However, spending too many hours online can affect our sleep and mood. Experts say it's healthy to take breaks and do other activities too.",
+  "Choosing what to study is a big decision for teenagers. Some follow their passion, while others choose careers with good job opportunities. The truth is that the world is changing fast, and the most important skills are curiosity, creativity and the ability to keep learning."
+ ],
+ adult:[
+  "Hello, my name is David. I'm an engineer and I live in Madrid with my family. On weekdays I work in an office and travel by train. In my free time I enjoy cooking, reading and going to the gym. I'm learning English to travel and improve my career.",
+  "Last month I attended a conference in another country. The meetings were intense, but I also had time to explore the city. Networking with international colleagues was very useful, and I came back with new ideas for my projects and several new contacts.",
+  "Remote work has transformed the modern workplace. Many professionals now enjoy greater flexibility and save time on commuting. On the other hand, working from home can blur the line between personal and professional life, so setting clear boundaries has become essential.",
+  "Artificial intelligence is reshaping entire industries, from healthcare to finance. While it promises remarkable gains in efficiency, it also raises important questions about employment, privacy and ethics. The challenge for society is to harness its benefits without losing sight of human values."
+ ]
+};
+// Frases para escucha/pronunciación, por fase: [inglés, español, "para qué se usa"]
+const IMM_PHRASES=[
+ [["Hello!","¡Hola!","saludar"],["Good morning","Buenos días","saludo por la mañana"],["Good night","Buenas noches","al ir a dormir"],["How are you?","¿Cómo estás?","preguntar por alguien"],["I'm fine, thank you","Estoy bien, gracias","responder cómo estás"],["What's your name?","¿Cómo te llamas?","preguntar el nombre"],["My name is Ana","Me llamo Ana","decir tu nombre"],["Nice to meet you","Encantado de conocerte","al conocer a alguien"],["Please","Por favor","pedir con educación"],["Thank you very much","Muchas gracias","dar las gracias"],["You're welcome","De nada","responder a gracias"],["Excuse me","Perdona / disculpa","llamar la atención"],["I'm sorry","Lo siento","disculparte"],["I don't understand","No entiendo","cuando no comprendes"],["Can you repeat, please?","¿Puedes repetir, por favor?","pedir que repitan"],["How much is it?","¿Cuánto cuesta?","preguntar el precio"],["Where is the bathroom?","¿Dónde está el baño?","preguntar por el baño"],["I'm hungry","Tengo hambre","decir que tienes hambre"],["I'm thirsty","Tengo sed","decir que tienes sed"],["See you later","Hasta luego","despedirte"]],
+ [["What did you do yesterday?","¿Qué hiciste ayer?","preguntar por el pasado"],["I went to the cinema","Fui al cine","contar algo del pasado"],["I'm going to travel next week","Voy a viajar la próxima semana","hablar de planes"],["I would like a coffee, please","Querría un café, por favor","pedir en una cafetería"],["Can I have the bill, please?","¿Me trae la cuenta, por favor?","pedir la cuenta"],["What time is it?","¿Qué hora es?","preguntar la hora"],["It was a great day","Fue un gran día","valorar el día"],["I feel tired","Me siento cansado","expresar cómo te sientes"],["I'm looking for the station","Busco la estación","pedir direcciones"],["Turn left, then turn right","Gira a la izquierda y luego a la derecha","dar direcciones"],["How was your weekend?","¿Qué tal tu fin de semana?","preguntar por el finde"],["I have a headache","Me duele la cabeza","decir que te duele algo"],["What do you do?","¿A qué te dedicas?","preguntar por el trabajo"],["I agree with you","Estoy de acuerdo contigo","mostrar acuerdo"],["That's a good idea","Es una buena idea","valorar una idea"],["See you tomorrow","Hasta mañana","despedirte"]],
+ [["What do you think about it?","¿Qué opinas de eso?","pedir opinión"],["In my opinion...","En mi opinión...","dar tu opinión"],["I've never been there","Nunca he estado allí","hablar de experiencias"],["If I had time, I would read more","Si tuviera tiempo, leería más","hablar de hipótesis"],["I used to play football","Antes jugaba al fútbol","hábitos del pasado"],["She told me she was busy","Me dijo que estaba ocupada","contar lo que dijo alguien"],["It depends on the situation","Depende de la situación","matizar"],["I'm not sure about that","No estoy seguro de eso","mostrar duda"],["Could you help me, please?","¿Podrías ayudarme, por favor?","pedir ayuda con educación"],["Let me think about it","Déjame pensarlo","ganar tiempo"],["On the other hand...","Por otro lado...","contrastar ideas"],["As far as I know...","Por lo que sé...","dar información con cautela"],["I'd rather not","Prefiero no hacerlo","rechazar con educación"],["That makes sense","Tiene sentido","mostrar que entiendes"],["What's it about?","¿De qué trata?","preguntar el tema"],["I'm looking forward to it","Lo espero con ganas","expresar ilusión"]],
+ [["If I had known, I would have come","Si lo hubiera sabido, habría venido","hipótesis del pasado"],["To be honest, I'm not convinced","Sinceramente, no me convence","opinar con franqueza"],["On the one hand... on the other hand...","Por un lado... por otro lado...","exponer dos caras"],["It's worth considering","Vale la pena considerarlo","valorar una opción"],["I see your point, but...","Entiendo tu punto, pero...","discrepar con respeto"],["That's easier said than done","Es más fácil decirlo que hacerlo","comentar una dificultad"],["Let's get to the point","Vayamos al grano","centrar la conversación"],["It's a matter of opinion","Es cuestión de opiniones","relativizar"],["I couldn't agree more","No podría estar más de acuerdo","acuerdo total"],["As I was saying...","Como decía...","retomar el hilo"],["I'm afraid I can't make it","Me temo que no podré ir","rechazar una invitación"],["That's beside the point","Eso no viene al caso","reconducir el tema"],["Long story short...","En resumen...","resumir"],["It goes without saying","Ni que decir tiene","señalar algo obvio"],["Bear in mind that...","Ten en cuenta que...","avisar de algo"],["I'm in two minds about it","Estoy indeciso","expresar duda"]]
+];
+const READING_ES={
+ kid:[
+  "¡Hola! Me llamo Leo. Tengo nueve años. Tengo un perro pequeño que se llama Max. Max es marrón y blanco. Todos los días jugamos en el parque. Me gustan las manzanas, el helado y el color verde. Mi mejor amigo es Tom. Vamos juntos al colegio.",
+  "Ayer fue mi cumpleaños. Mi madre hizo una gran tarta de chocolate. Mis amigos vinieron a mi casa y jugamos a juegos. Me regalaron una bici nueva y un balón. Comimos pizza y cantamos canciones. ¡Fue el mejor día de todos!",
+  "Los delfines son animales muy listos. Viven en el mar y pueden nadar muy rápido. Los delfines se comunican entre ellos con sonidos especiales. Les gusta jugar y saltar fuera del agua. Mucha gente piensa que los delfines son amistosos y amables.",
+  "Imagina que pudieras tener cualquier superpoder. Algunos niños quieren volar, otros quieren ser invisibles. Un superpoder sería divertido, pero los héroes de verdad son diferentes. Un héroe de verdad es alguien que ayuda a los demás, dice la verdad y es valiente cuando las cosas son difíciles."
+ ],
+ teen:[
+  "Hola, soy Sara. Tengo quince años y me encantan la música y los videojuegos. Después del colegio suelo quedar con mis amigos o ver series en el móvil. Mi asignatura favorita es arte. Los fines de semana juego al baloncesto y hablo por internet con mis amigos.",
+  "El verano pasado mi familia viajó a Italia. Visitamos ciudades antiguas, comimos una pizza buenísima y nadamos en el mar. Hice cientos de fotos para mis redes sociales. Lo mejor fue hacer nuevos amigos de otros países. Tengo muchas ganas de volver.",
+  "Las redes sociales son una parte enorme de la vida adolescente hoy en día. Nos ayudan a mantener el contacto con los amigos y a descubrir cosas nuevas. Sin embargo, pasar demasiadas horas conectados puede afectar a nuestro sueño y a nuestro estado de ánimo. Los expertos dicen que es sano hacer descansos y hacer también otras actividades.",
+  "Elegir qué estudiar es una gran decisión para los adolescentes. Algunos siguen su pasión, mientras que otros eligen carreras con buenas salidas laborales. La verdad es que el mundo cambia rápido, y las habilidades más importantes son la curiosidad, la creatividad y la capacidad de seguir aprendiendo."
+ ],
+ adult:[
+  "Hola, me llamo David. Soy ingeniero y vivo en Madrid con mi familia. Entre semana trabajo en una oficina y voy en tren. En mi tiempo libre disfruto cocinando, leyendo y yendo al gimnasio. Estoy aprendiendo inglés para viajar y mejorar mi carrera.",
+  "El mes pasado asistí a una conferencia en otro país. Las reuniones fueron intensas, pero también tuve tiempo de explorar la ciudad. Hacer contactos con colegas internacionales fue muy útil, y volví con nuevas ideas para mis proyectos y varios contactos nuevos.",
+  "El trabajo en remoto ha transformado el lugar de trabajo moderno. Muchos profesionales disfrutan ahora de mayor flexibilidad y ahorran tiempo en los desplazamientos. Por otro lado, trabajar desde casa puede difuminar la línea entre la vida personal y la profesional, así que establecer límites claros se ha vuelto esencial.",
+  "La inteligencia artificial está transformando industrias enteras, desde la sanidad hasta las finanzas. Aunque promete enormes mejoras de eficiencia, también plantea preguntas importantes sobre el empleo, la privacidad y la ética. El reto para la sociedad es aprovechar sus beneficios sin perder de vista los valores humanos."
+ ]
+};
+function guidedContent(seg,week){
+  const ph=phaseOfWeek(week+1); const age=ageOf();
+  if(seg.k==='reading'){ const t=(READING_BY_AGE[age]||READING_BY_AGE.adult)[ph.n-1]; return {title:'📖 Lee este texto en voz alta',body:'<div style="font-size:16px;line-height:1.8">'+t+'</div>',say:t,tip:'Léelo en alto. Pulsa 🔊 para oírlo y copia la pronunciación. Subraya las palabras que no conozcas y pásalas a Claude.'}; }
+  if(seg.k==='claude'){ return {title:'🗣️ Conversa con Claude',body:'Abre la pestaña <b>💬 Hablar con Claude</b>, copia el prompt nº1 y habla sobre: <b>'+WEEKS[week].v+'</b>. Pídele que te corrija cada frase. En el móvil puedes usar el modo voz.',tip:'Habla aunque sea con frases cortas. Lo importante es producir.'}; }
+  if(seg.k==='writing'){ return {title:'✍️ Escribe',body:'Escribe 5-8 frases en inglés sobre <b>'+WEEKS[week].v+'</b> usando <b>'+WEEKS[week].g+'</b>. Luego pégalo a Claude (prompt nº2) para que te corrija.',tip:'No te preocupes por los errores: para eso está la corrección.'}; }
+  if(seg.k==='series'){ const s=(SERIES_BY_AGE[age]||SERIES_BY_AGE.adult)[ph.n-1]; return {title:'🎬 Serie o vídeo',body:'Mira algo en inglés adecuado a tu edad: <b>'+s+'</b>, con subtítulos en inglés. Apunta 3 palabras nuevas.',tip:'No traduzcas todo; disfruta y capta la idea general.'}; }
+  return {title:seg.label,body:'',tip:''};
+}
+function buildSegmentSet(type,week){
+  const d=dayObj(viewDay); let set=[];
+  if(type==='gram'){
+    let pool=gramPool(week).filter(x=>!seenHas(d,'g:'+x.w+':'+x.g.q));
+    let review=false;
+    if(!pool.length){ const recentG=(d.seen||[]).slice(-6); pool=gramPool(week).filter(x=>recentG.indexOf('g:'+x.w+':'+x.g.q)<0); review=true; } // repaso espaciado
+    shuffle(pool).slice(0,5).forEach(x=>{ const e=makeGramExercise(x.g,x.w); if(review)e.review=true; set.push(e); });
+    return set;
+  }
+  if(type==='review'){
+    const weak=(store.reinforce||[]); const recent=(d.seen||[]).slice(-8);
+    if(weak.length){ shuffle(weak).slice(0,5).forEach(r=>{
+      if(r.key.indexOf('gram:')===0){ const sig=r.key.slice(5); // mismo concepto, OTRA frase
+        let c=gramPool(week).filter(x=>optsSig(x.g.o)===sig && recent.indexOf('g:'+x.w+':'+x.g.q)<0);
+        if(!c.length) c=gramPool(week).filter(x=>optsSig(x.g.o)===sig);
+        if(!c.length) c=gramPool(week);
+        const x=c[Math.floor(Math.random()*c.length)]; const e=makeGramExercise(x.g,x.w); e.reinforce=true; set.push(e);
+      } else { const it=ALLVOCAB.find(x=>x[0]===r.key); if(it){ const e=makeVocabExercise(it,week,reinKind(it)); e.reinforce=true; set.push(e); } } // misma palabra, OTRO formato
+    }); }
+    if(!set.length){ shuffle(vocabPool(week).filter(it=>recent.indexOf(it[0])<0)).slice(0,5).forEach((it,k)=>{ const e=makeVocabExercise(it,week,reinKind(it)); e.review=true; set.push(e); }); }
+    return set;
+  }
+  // VOCAB: primero lo NO visto hoy (nuevas de la semana, luego banco). Al agotarse -> repaso espaciado.
+  const wk=weekVocab(week);
+  const newW=wk.filter(it=>!seenHas(d,it[0]));
+  const rest=shuffle(vocabPool(week).filter(it=>!seenHas(d,it[0]) && wk.indexOf(it)<0));
+  let order=newW.concat(rest); let review=false;
+  order.sort((a,b)=>(isMastered(a[0])?1:0)-(isMastered(b[0])?1:0)); // primero lo no dominado (adaptación al nivel)
+  if(!order.length){ const recent=(d.seen||[]).slice(-8); order=shuffle(vocabPool(week).filter(it=>recent.indexOf(it[0])<0)); review=true; }
+  d.batches=(d.batches||0)+1;
+  order.slice(0,5).forEach((it,k)=>{ const e=makeVocabExercise(it,week,pickKind(it,k,d.batches)); if(review)e.review=true; set.push(e); });
+  return set;
+}
+function ensureSegSet(d,type){
+  const wk=Math.floor(viewDay/7);
+  if(d.segLoaded!==d.seg){ d.set=buildSegmentSet(type,wk); d.cur=0; d.segLoaded=d.seg; save(); }
+  else if(d.cur>=d.set.length){ const more=buildSegmentSet(type,wk); if(more.length){ d.set=d.set.concat(more); save(); } }
+}
+function nextSegment(){ stopImm(); const d=dayObj(viewDay); d.seg=(d.seg||0)+1; d.segLoaded=-1; save(); renderTimerControls(); renderSession(); }
+
+//==================== ESCUCHA INMERSIVA (como un bebé) ====================
+let immTimer=null, immIdx=0, immAuto=false, immArr=null, immWeek=-1;
+function immDeck(week){
+  const ph=phaseOfWeek(week+1);
+  let words=[]; for(let w=ph.w[0]-1; w<=week; w++) words=words.concat(weekVocab(w));
+  words=dedupeVocab(words.concat(A1_BANK,A2_BANK));
+  const phr=(IMM_PHRASES[ph.n-1]||[]);
+  const deck=words.map(x=>({en:x[0],es:x[1],emo:x[2]||'🔊',note:''})).concat(phr.map(p=>({en:p[0],es:p[1],emo:'💬',note:p[2]||''})));
+  return shuffle(deck);
+}
+function immGet(week){ if(immArr===null || immWeek!==week){ immArr=immDeck(week); immWeek=week; immIdx=0; } return immArr; }
+function renderImmersive(body,d,week){
+  const items=immGet(week); if(immIdx>=items.length)immIdx=0; const it=items[immIdx];
+  body.innerHTML=`<div class="card" style="background:var(--bg2);margin:6px 0;text-align:center">
+    <div class="smallnote">Escucha, mira el significado y repite en voz alta. (${immIdx+1} de ${items.length})</div>
+    <div style="font-size:54px;margin:6px">${it.emo}</div>
+    <div style="font-size:26px;font-weight:800">${it.en}</div>
+    <div style="font-size:16px;margin:4px 0">significa: <b>${it.es}</b></div>
+    <div style="font-size:14px;color:var(--accent2)">🗣️ se pronuncia: ${phonHint(it.en)}</div>
+    ${it.note?`<div style="color:var(--accent2);font-size:14px;margin-bottom:8px">🟢 se usa para: ${it.note}</div>`:'<div style="margin-bottom:8px"></div>'}
+    <div class="row" style="justify-content:center">
+      <button class="speakbtn" id="immRep">🔊 Repetir</button>
+      <button class="speakbtn" id="immAuto">${immAuto?'⏸ Pausar audio':'⏯ Automático'}</button>
+      <button class="speakbtn" id="immNext">▶ Siguiente</button>
+    </div></div>`;
+  speak(it.en);
+  document.getElementById('immRep').onclick=()=>speak(it.en);
+  document.getElementById('immNext').onclick=()=>{ immIdx=(immIdx+1)%items.length; renderImmersiveBody(); };
+  document.getElementById('immAuto').onclick=()=>{ if(immAuto)stopImm(); else startImm(); renderImmersiveBody(); };
+}
+function renderImmersiveBody(){ const d=dayObj(viewDay); const seg=AGENDA[d.seg]; const body=document.getElementById('segBody'); if(seg&&seg.type==='immersive'&&body) renderImmersive(body,d,Math.floor(viewDay/7)); }
+function startImm(){ stopImm(); immAuto=true; immTimer=setInterval(()=>{ const items=immGet(Math.floor(viewDay/7)); immIdx=(immIdx+1)%items.length; renderImmersiveBody(); },5500); }
+function stopImm(){ immAuto=false; if(immTimer){clearInterval(immTimer);immTimer=null;} }
+
+//==================== PRONUNCIACIÓN (te escucha y valora) ====================
+// Guía de pronunciación (respelling estilo español). Curado para lo común; aproximado para el resto.
+const PRON_MAP={
+ "one":"uán","two":"tu","three":"zríi","four":"foor","five":"fáiv","six":"siks","seven":"séven","eight":"éit","nine":"náin","ten":"ten","eleven":"iléven","twelve":"tuélf","thirteen":"zertíin","fourteen":"fortíin","fifteen":"fiftíin","sixteen":"sikstíin","twenty":"tuénti",
+ "hello":"jelóu","goodbye":"gud-bái","good morning":"gud mórnin","good night":"gud náit","thank you":"zénk iu","thank you very much":"zénk iu véri mach","please":"plíis","you're welcome":"yor uélcam","excuse me":"ikskiús mi","i'm sorry":"áim sóri","see you later":"síi iu léiter","see you tomorrow":"síi iu tumórou",
+ "how are you?":"jáu ar iú","i'm fine, thank you":"áim fáin, zénk iu","what's your name?":"uats yor néim","my name is ana":"mai néim is ana","nice to meet you":"náis tu míit iu","i don't understand":"ai dont anderstánd","can you repeat, please?":"can iu ripíit plíis","i'm hungry":"áim jángri","i'm thirsty":"áim zérsti","how much is it?":"jáu mach is it","where is the bathroom?":"uér is de bázrum",
+ "water":"uóter","house":"jáus","mother":"máder","father":"fáder","brother":"bráder","sister":"síster","baby":"béibi","family":"fámili","apple":"ápol","bread":"bred","milk":"milk","cheese":"chíis","fish":"fish","egg":"eg","dog":"dog","cat":"cat","book":"buk","school":"skúul","friend":"frend","work":"uérk","read":"ríid","write":"ráit","eat":"íit","drink":"drink","sleep":"slíip","happy":"jápi","beautiful":"biútiful","because":"bicós","people":"pípol","world":"uérld","beach":"bíich","weather":"uéder","tooth":"túuz","heart":"jart","head":"jed","hair":"jér","woman":"uúman","man":"man","child":"cháild","children":"children","car":"car","bus":"bas","tree":"tríi","sun":"san","moon":"múun","night":"náit","day":"déi","year":"íiar","blue":"blú","green":"gríin","white":"uáit","orange":"órinch","chicken":"chíken","kitchen":"kítchen","window":"uíndou","money":"máni","buy":"bái"
+};
+function phonRaw(w){ let p=w.toLowerCase().replace(/[^a-z' ]/g,'');
+  p=p.replace(/tion/g,'shon').replace(/ph/g,'f').replace(/th/g,'z').replace(/qu/g,'cu').replace(/wh/g,'u').replace(/ck/g,'k').replace(/ll/g,'l').replace(/ng\b/g,'ng')
+   .replace(/oo/g,'u').replace(/ee/g,'ii').replace(/ea/g,'ii').replace(/oa/g,'ou').replace(/ou/g,'au').replace(/ow/g,'au').replace(/ai/g,'éi').replace(/ay/g,'éi')
+   .replace(/^h/,'j').replace(/w/g,'u').replace(/y/g,'i').replace(/([a-z])e\b/g,'$1');
+  return p; }
+function phonHint(s){ const k=(s||'').toLowerCase().trim(); if(PRON_MAP[k])return PRON_MAP[k]; return s.split(/\s+/).map(w=>{ const lw=w.toLowerCase().replace(/[^a-z']/g,''); return PRON_MAP[lw]||phonRaw(lw); }).join(' '); }
+function phonExact(s){ const k=(s||'').toLowerCase().trim(); return !!PRON_MAP[k]; }
+function isMastered(key){ const m=store.mastery&&store.mastery[key]; return !!(m && m.c>=3 && m.ok>=2); }
+let pronArr=null, pronWeek=-1, pronIdx=0;
+function pronGet(week){ if(pronArr===null||pronWeek!==week){ pronArr=immDeck(week); pronWeek=week; pronIdx=0; } return pronArr; }
+const NUMMAP={zero:'0',one:'1',two:'2',three:'3',four:'4',five:'5',six:'6',seven:'7',eight:'8',nine:'9',ten:'10',eleven:'11',twelve:'12',thirteen:'13',fourteen:'14',fifteen:'15',sixteen:'16',seventeen:'17',eighteen:'18',nineteen:'19',twenty:'20'};
+function canon(s){ return norm(s).split(' ').map(w=>NUMMAP[w]||w).join(' '); } // "ten" y "10" cuentan igual
+function pronScore(a,b){ a=canon(a); b=canon(b); if(a===b)return 1; const aw=a.split(' ').filter(Boolean), bw=b.split(' ').filter(Boolean); let m=0; aw.forEach(w=>{ if(bw.includes(w))m++; }); return aw.length?m/aw.length:0; }
+function renderPronBody(){ const d=dayObj(viewDay); const seg=AGENDA[d.seg]; const body=document.getElementById('segBody'); if(seg&&seg.type==='pron'&&body) renderPron(body,d,Math.floor(viewDay/7)); }
+function renderPron(body,d,week){
+  const items=pronGet(week); if(pronIdx>=items.length)pronIdx=0; const it=items[pronIdx];
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  body.innerHTML=`<div class="card" style="background:var(--bg2);margin:6px 0;text-align:center">
+    <div class="smallnote">Di esto en inglés. El micrófono te escucha y valora tu pronunciación. (${pronIdx+1} de ${items.length})</div>
+    <div style="font-size:24px;font-weight:800;margin:8px 4px">${it.en}</div>
+    <div style="font-size:15px;color:var(--muted)">significa: <b>${it.es}</b>${it.note?' · '+it.note:''}</div>
+    <div style="font-size:15px;color:var(--accent2);margin-top:4px">🗣️ se pronuncia: <b>${phonHint(it.en)}</b>${phonExact(it.en)?'':' <span style="color:var(--muted);font-size:12px">(aprox.; usa 🔊)</span>'}</div>
+    <div class="row" style="justify-content:center;margin-top:12px">
+      <button class="speakbtn" id="pHear">🔊 Oír cómo suena</button>
+      <button class="btn" id="pTry" style="padding:10px 18px">🎤 Probar mi pronunciación</button>
+      <button class="speakbtn" id="pNext">▶ Siguiente</button>
+    </div>
+    <div id="pFb" style="margin-top:12px;font-size:15px;min-height:20px"></div>
+    ${SR?'':'<div class="smallnote" style="color:var(--warn)">Este navegador no permite evaluar la voz. Usa 🔊 y repite en alto (funciona en Chrome y Safari).</div>'}
+  </div>`;
+  document.getElementById('pHear').onclick=()=>speak(it.en);
+  document.getElementById('pNext').onclick=()=>{ pronIdx=(pronIdx+1)%items.length; renderPronBody(); };
+  const tryBtn=document.getElementById('pTry'); if(!SR){ tryBtn.style.display='none'; return; }
+  tryBtn.onclick=()=>{
+    const fb=document.getElementById('pFb');
+    let rec; try{ rec=new SR(); }catch(e){ fb.style.color='var(--danger)';fb.textContent='No se pudo abrir el micrófono.'; return; }
+    rec.lang='en-US'; rec.continuous=false; rec.interimResults=false; rec.maxAlternatives=4;
+    let done=false;
+    const finish=(html,color)=>{ if(done)return; done=true; clearTimeout(to); try{rec.stop();}catch(e){} try{rec.abort&&rec.abort();}catch(e){}
+      fb.style.color=color; fb.innerHTML=html; tryBtn.disabled=false; tryBtn.textContent='🎤 Probar otra vez'; };
+    const to=setTimeout(()=>finish('⏱️ No te oí. Pulsa 🔊 para oírlo y vuelve a intentarlo con 🎤.','var(--warn)'), 7000);
+    fb.style.color='var(--muted)'; fb.textContent='🎤 Escuchando… habla ahora.'; tryBtn.disabled=true; tryBtn.textContent='🎤 Escuchando…';
+    rec.onresult=(e)=>{ let raw=e.results[0][0].transcript;
+      for(let i=0;i<e.results[0].length;i++){ if(canon(e.results[0][i].transcript)===canon(it.en)){ raw=e.results[0][i].transcript; break; } }
+      const sc=pronScore(it.en, raw); const ok=sc>=0.6;
+      recordResult('pron:'+canon(it.en),'Pronunciación: '+it.en, ok); save();
+      if(sc>=0.85) finish('✅ ¡Perfecto! Muy bien pronunciado.','var(--ok)');
+      else if(ok) finish('✅ ¡Bien! Te he entendido. Puedes pasar a la siguiente ▶','var(--ok)');
+      else if(sc>=0.35) finish('👍 Casi. Oí: "<i>'+norm(raw)+'</i>". Mira "se pronuncia", pulsa 🔊 y repite.','var(--warn)');
+      else finish('🔁 Oí: "<i>'+norm(raw)+'</i>". Fíjate en la guía "se pronuncia", escucha 🔊 y repite despacio.','var(--danger)'); };
+    rec.onerror=(e)=>{ finish((e.error==='not-allowed'||e.error==='service-not-allowed')?'🎤 Permite el micrófono en el navegador para evaluar tu voz.':'No te oí bien. Inténtalo otra vez.','var(--danger)'); };
+    rec.onend=()=>{ finish('No te oí. Pulsa 🎤 e inténtalo otra vez (habla cerca del micrófono).','var(--muted)'); };
+    try{ rec.start(); }catch(e){ finish('No se pudo iniciar el micrófono.','var(--danger)'); }
+  };
+}
+
+//==================== LECTURA INTERACTIVA ====================
+function translateWord(w,box){
+  const clean=w.toLowerCase().replace(/[^a-zñ'’\-]/gi,'');
+  if(!clean){ box.textContent=''; return; }
+  speak(clean);
+  const ph=' · 🗣️ '+phonHint(clean);
+  const local=EN2ES[clean];
+  if(local){ box.innerHTML='🔤 <b>'+clean+'</b> → '+local+ph; return; }
+  box.innerHTML='🔤 <b>'+clean+'</b> → traduciendo…';
+  fetch('https://api.mymemory.translated.net/get?q='+encodeURIComponent(clean)+'&langpair=en|es')
+    .then(r=>r.json())
+    .then(j=>{ const t=j&&j.responseData&&j.responseData.translatedText; box.innerHTML=t?('🔤 <b>'+clean+'</b> → '+t+ph):('🔤 <b>'+clean+'</b>'+ph); })
+    .catch(()=>{ box.innerHTML='🔤 <b>'+clean+'</b>'+ph+' <span class="smallnote">(sin conexión para traducir)</span>'; });
+}
+function startReadAloud(en,box){
+  const sents=en.match(/[^.!?]+[.!?]+/g)||[en]; let idx=0;
+  function render(){
+    const s=sents[idx].trim();
+    box.innerHTML=`<div class="card" style="background:var(--card2);margin:0">
+      <div class="smallnote">Lee en voz alta. Frase ${idx+1} de ${sents.length}.</div>
+      <div style="font-size:16px;margin:6px 0">${s}</div>
+      <div class="row"><button class="speakbtn" id="rsHear">🔊 Oír</button><button class="btn" id="rsTry">🎤 Leer y corregir</button><button class="speakbtn" id="rsNext">▶ Siguiente</button></div>
+      <div id="rsFb" style="margin-top:8px;font-size:14px;min-height:18px"></div></div>`;
+    document.getElementById('rsHear').onclick=()=>speak(s);
+    document.getElementById('rsNext').onclick=()=>{ idx=(idx+1)%sents.length; render(); };
+    const SR=window.SpeechRecognition||window.webkitSpeechRecognition; const t=document.getElementById('rsTry');
+    if(!SR){ t.style.display='none'; return; }
+    t.onclick=()=>{ const fb=document.getElementById('rsFb'); let rec,done=false; try{rec=new SR();}catch(e){fb.textContent='No se pudo abrir el micrófono.';return;}
+      rec.lang='en-US';rec.continuous=false;rec.interimResults=false;rec.maxAlternatives=3;
+      const finish=(h,c)=>{ if(done)return;done=true;clearTimeout(to);try{rec.stop();}catch(e){} fb.style.color=c;fb.innerHTML=h;t.disabled=false;t.textContent='🎤 Leer otra vez'; };
+      const to=setTimeout(()=>finish('⏱️ No te oí. Inténtalo otra vez.','var(--warn)'),10000);
+      fb.style.color='var(--muted)';fb.textContent='🎤 Escuchando… lee la frase.';t.disabled=true;t.textContent='🎤 Escuchando…';
+      rec.onresult=(e)=>{ const said=e.results[0][0].transcript; const sc=pronScore(s,said);
+        if(sc>=0.8) finish('✅ ¡Muy bien! Lectura clara y correcta.','var(--ok)');
+        else if(sc>=0.5) finish('👍 Bien. Oí: "<i>'+norm(said)+'</i>". Repasa las palabras que falten con 🔊.','var(--warn)');
+        else finish('🔁 Oí: "<i>'+norm(said)+'</i>". Escucha 🔊 y léela más despacio.','var(--danger)'); };
+      rec.onerror=()=>finish('No te oí bien, inténtalo otra vez.','var(--danger)');
+      rec.onend=()=>finish('No te oí. Inténtalo otra vez (habla cerca del micrófono).','var(--muted)');
+      try{rec.start();}catch(e){finish('No se pudo iniciar el micrófono.','var(--danger)');}
+    };
+  }
+  box.style.display='block'; render();
+}
+function renderReading(body,d,week){
+  const ph=phaseOfWeek(week+1), age=ageOf();
+  const en=(READING_BY_AGE[age]||READING_BY_AGE.adult)[ph.n-1];
+  const es=(READING_ES[age]||READING_ES.adult)[ph.n-1];
+  const html=en.split(/(\s+)/).map(tok=> /\S/.test(tok) ? '<span class="rw">'+tok+'</span>' : tok).join('');
+  body.innerHTML=`<div class="card" style="background:var(--bg2);margin:6px 0">
+    <h3 style="margin-top:0">📖 Lectura — toca una palabra para ver su traducción</h3>
+    <div style="font-size:17px;line-height:1.9" id="rwText">${html}</div>
+    <div id="rwTrans" style="min-height:22px;margin-top:8px;font-size:15px;color:var(--accent2)"></div>
+    <div class="row" style="margin-top:10px">
+      <button class="speakbtn" id="rHear">🔊 Escuchar todo</button>
+      <button class="speakbtn" id="rTransBtn">🇪🇸 Ver traducción</button>
+      <button class="btn" id="rReadBtn">🎤 Leer en voz alta y corregir</button>
+    </div>
+    <div id="rEsBox" style="display:none;margin-top:10px;font-size:15px;color:var(--muted);border-left:3px solid var(--accent);padding-left:10px">${es}</div>
+    <div id="rReadBox" style="display:none;margin-top:10px"></div>
+    <div class="smallnote">Toca palabras que no entiendas; o pulsa "Ver traducción" para el texto entero. Luego léelo en voz alta y te corrijo.</div>
+  </div>`;
+  const trans=document.getElementById('rwTrans');
+  body.querySelectorAll('.rw').forEach(sp=>sp.onclick=()=>translateWord(sp.textContent,trans));
+  document.getElementById('rHear').onclick=()=>speak(en);
+  document.getElementById('rTransBtn').onclick=()=>{ const b=document.getElementById('rEsBox'); b.style.display=b.style.display==='none'?'block':'none'; };
+  document.getElementById('rReadBtn').onclick=()=>startReadAloud(en,document.getElementById('rReadBox'));
+}
+
+//==================== TIMER ====================
+let timer={running:false,int:null};
+function dayObj(i){ if(!store.days['d'+i]) store.days['d'+i]={el:0,done:false,ex:{},set:null,cur:0,score:{c:0,t:0},started:0,committed:0,vqueue:null,gqueue:null,seen:[],batches:0,seg:0,segEl:{},segLoaded:-1}; const o=store.days['d'+i]; if(o.seg==null)o.seg=0; if(!o.segEl)o.segEl={}; if(o.segLoaded==null)o.segLoaded=-1; return o; }
+function startTimer(){
+  const d=dayObj(viewDay);
+  if(d.el>=DAY_CAP){ return; }
+  if(!d.started) d.started=Date.now();
+  timer.running=true; clearInterval(timer.int); timer.int=setInterval(tick,1000);
+  renderTimerControls(); updateClock(); renderSession();
+}
+function tick(){
+  const d=dayObj(viewDay); d.el++;
+  if(!isExamDay(viewDay) && d.seg<AGENDA.length){ d.segEl[d.seg]=(d.segEl[d.seg]||0)+1; }
+  if(d.el%20===0) save();
+  if(d.el>=DAY_CAP){ d.el=DAY_CAP; pauseTimer(); save(); renderSession(); }
+  updateClock();
+}
+function pauseTimer(){ timer.running=false; clearInterval(timer.int); stopImm(); save(); renderTimerControls(); }
+function updateClock(){
+  const d=dayObj(viewDay); const rem=Math.max(0,DAY_CAP-d.el);
+  const el=document.getElementById('timerClock'); if(!el)return;
+  el.textContent=fmtClock(rem);
+  el.className='timerclock'+(rem<=0?' done':(rem<600?' low':''));
+  const meta=document.getElementById('timerMeta');
+  if(meta) meta.textContent = d.done?'Día archivado ✓':(rem<=0?'Tiempo de hoy agotado (120 min)':'Llevas '+Math.floor(d.el/60)+' min de 120');
+  const sc=document.getElementById('segClock'); if(sc && !isExamDay(viewDay)){ const seg=AGENDA[d.seg]; if(seg){ const sr=Math.max(0,seg.mins*60-(d.segEl[d.seg]||0)); sc.textContent=fmtClock(sr); sc.style.color=sr<=0?'var(--warn)':''; } }
+}
+function renderTimerControls(){
+  const c=document.getElementById('timerCtrls'); if(!c)return;
+  const d=dayObj(viewDay); c.innerHTML='';
+  if(d.el>=DAY_CAP){
+    if(!d.done){ c.innerHTML='<button class="timerbtn" id="commitBtn">Archivar día</button>'; document.getElementById('commitBtn').onclick=commitDay; }
+    else c.innerHTML='<span class="timermeta">120 min completados ✓</span>';
+    return;
+  }
+  if(timer.running){ const b=document.createElement('button');b.className='timerbtn ghost';b.textContent='⏸ Pausar';b.onclick=pauseTimer;c.appendChild(b); }
+  else { const b=document.createElement('button');b.className='timerbtn';b.textContent=(d.el>0?'▶ Reanudar':'▶ Empezar sesión');b.onclick=startTimer;c.appendChild(b); }
+  if(!d.done){ const fin=document.createElement('button');fin.className='timerbtn ghost';fin.textContent='Terminar y guardar';fin.onclick=commitDay;c.appendChild(fin); }
+  else { const s=document.createElement('span'); s.className='timermeta'; s.textContent='Día guardado ✓ · sigues practicando'; c.appendChild(s); }
+}
+function commitDay(){
+  const d=dayObj(viewDay); d.done=true; d.committed=Date.now();
+  if(d.isExam){
+    const W=Math.floor(viewDay/7)+1; const pct=d.score.t?Math.round(d.score.c/d.score.t*100):0; const pass=pct>=70;
+    store.exams[W]={pct,pass,ts:Date.now()};
+    if(pass){ const lv={12:'A1',24:'A2',36:'B1',48:'B2'}[W]; if(lv) store.levels[lv]=Date.now(); }
+  }
+  if(d.set) d.cur=d.set.length; // saltar al resumen/hub
+  pauseTimer(); save();
+  renderTimerControls(); renderSession(); renderTop(); renderProgress();
+}
+
+//==================== SESIÓN / EJERCICIOS ====================
+let viewDay = Math.max(0,Math.min(DAYS-1, ti<0?0:ti));
+
+function renderDay(){
+  const i=viewDay, week=Math.floor(i/7), dow=i%7;
+  const wk=WEEKS[week], ph=phaseOfWeek(week+1), date=dateOfDay(i);
+  const DOW=["Lunes","Martes","Miércoles","Jueves","Viernes","Sábado","Domingo"];
+  document.getElementById('dayTitle').textContent = DOW[dow]+" · Día "+(i+1);
+  let sub=fmt(date); if(i===ti)sub+=" · ¡HOY!"; if(ti<0&&i===0)sub+=" · (empieza el plan)";
+  document.getElementById('daySub').textContent=sub;
+  document.getElementById('dayPhase').innerHTML=`<span class="phasechip" style="background:${ph.color}">${ph.name} · ${ph.level}</span> <span style="color:var(--muted);font-size:12px">· Semana ${week+1}</span>`;
+  const exToday=isExamDay(i);
+  document.getElementById('dayFocus').innerHTML= exToday
+    ? `📝 <b>EXAMEN DE FASE</b> (semana ${exToday}) — ${MILES[exToday].t}.<br><span style="color:var(--muted)">El sistema evaluará tu nivel. Necesitas 70% para aprobar. ¡Suerte!</span>`
+    : `📐 Gramática: <b>${wk.g}</b><br>🧠 Vocabulario: <b>${wk.v}</b><br><span style="color:var(--muted)">Pulsa ▶ Empezar y el sistema te guía por las 8 actividades del día (120 min).</span>`;
+  renderInsights(); updateClock(); renderTimerControls(); renderSession();
+}
+
+function segHeader(d){
+  const chips=AGENDA.map((s,k)=>{ const done=(d.segEl[k]||0)>=s.mins*60; const cur=k===d.seg;
+    return `<span class="tag" style="cursor:pointer;${cur?'background:var(--accent);color:#fff':(done?'color:var(--ok);border:1px solid var(--ok)':'')}" data-seg="${k}">${done?'✓':''}${s.ic} ${s.mins}m</span>`; }).join(' ');
+  const seg=AGENDA[d.seg]; const segRem=Math.max(0,seg.mins*60-(d.segEl[d.seg]||0));
+  return `<div style="margin:6px 0;text-align:center">${chips}</div>
+   <div class="focus" style="border-left-color:var(--p2)"><b>${seg.ic} Actividad ${d.seg+1}/${AGENDA.length}: ${seg.label}</b> · ⏳ <b id="segClock">${fmtClock(segRem)}</b> de ${seg.mins} min
+   <div class="smallnote">Cuando se acabe el tiempo (o cuando quieras) pulsa "Siguiente actividad". Puedes tocar los círculos de arriba para saltar.</div></div>`;
+}
+function renderExamSession(area,d,pct){
+  if(!d.set){ d.set=buildDaySet(viewDay); d.isExam=true; d.cur=0; d.ex={}; d.score={c:0,t:0}; save(); }
+  const n=d.set.length;
+  if(d.cur>=n){ const pass=pct>=70;
+    area.innerHTML=`<div class="card" style="background:var(--bg2);margin:10px 0"><h3 style="margin-top:0">📝 Resultado del examen</h3>
+      <div class="bigscore">${d.score.c}/${d.score.t}</div><div style="text-align:center;color:var(--muted)">${pct}% · ${Math.floor(d.el/60)} min</div>
+      <div style="text-align:center;margin-top:10px;font-weight:700;color:${pass?'var(--ok)':'var(--danger)'}">${pass?'✅ ¡EXAMEN APROBADO!':'❌ No superado (necesitas 70%)'}</div>
+      ${d.done?'<div style="text-align:center;color:var(--ok);margin-top:10px">✓ Archivado</div>':'<button class="exbtn" id="commit2">Archivar examen</button>'}</div>`;
+    if(!d.done){const b=document.getElementById('commit2');if(b)b.onclick=commitDay;} return;
+  }
+  renderExercise(area,d,d.set[d.cur],d.cur,n);
+}
+function renderSession(){
+  const area=document.getElementById('sessionArea'); if(!area)return;
+  const d=dayObj(viewDay);
+  const pct=d.score.t?Math.round(d.score.c/d.score.t*100):0;
+  if(d.el>=DAY_CAP){
+    area.innerHTML=`<div class="card" style="background:var(--bg2);margin:10px 0"><h3 style="margin-top:0">⏱️ ¡120 minutos completados!</h3>
+      <div class="bigscore">${d.score.c}/${d.score.t}</div><div style="text-align:center;color:var(--muted)">${pct}% en ejercicios · 120 min</div>
+      ${d.done?'<div style="text-align:center;color:var(--ok);margin-top:10px">✓ Día archivado. ¡Gran trabajo, nos vemos mañana!</div>':'<button class="exbtn" id="commit2">Archivar día en mi repositorio</button>'}</div>`;
+    if(!d.done){ const b=document.getElementById('commit2'); if(b)b.onclick=commitDay; } return;
+  }
+  if(!d.started && d.el===0){
+    area.innerHTML=`<div class="lockmsg">Pulsa <b>▶ Empezar sesión</b> arriba para empezar tu sesión guiada de hoy (8 actividades, 120 min).</div>`; return;
+  }
+  if(isExamDay(viewDay)){ renderExamSession(area,d,pct); return; }
+  // AGENDA completada
+  if(d.seg>=AGENDA.length){
+    area.innerHTML=`<div class="card" style="background:var(--bg2);margin:10px 0"><h3 style="margin-top:0">🎉 ¡Agenda de hoy completada!</h3>
+      <div class="bigscore">${d.score.c}/${d.score.t}</div><div style="text-align:center;color:var(--muted)">${pct}% en ejercicios · ${Math.floor(d.el/60)} min</div>
+      ${d.done?'<div style="text-align:center;color:var(--ok);margin:8px 0">✓ Día archivado</div>':'<button class="exbtn" id="commit2">Archivar día en mi repositorio</button>'}
+      <button class="exbtn ghost" id="againBtn">Repasar otra actividad</button></div>`;
+    if(!d.done){const b=document.getElementById('commit2');if(b)b.onclick=commitDay;}
+    document.getElementById('againBtn').onclick=()=>{ d.seg=0; d.segLoaded=-1; save(); renderSession(); };
+    return;
+  }
+  const seg=AGENDA[d.seg], week=Math.floor(viewDay/7);
+  area.innerHTML = segHeader(d) + '<div id="segBody"></div>';
+  area.querySelectorAll('[data-seg]').forEach(el=>el.onclick=()=>{ stopImm(); d.seg=+el.dataset.seg; d.segLoaded=-1; save(); renderTimerControls(); renderSession(); });
+  const body=document.getElementById('segBody');
+  const nextHtml='<button class="exbtn ghost" id="segNext" style="margin-top:10px">Siguiente actividad ▶</button>';
+  if(seg.type==='immersive'){ renderImmersive(body,d,week); body.insertAdjacentHTML('beforeend',nextHtml); }
+  else if(seg.type==='pron'){ renderPron(body,d,week); body.insertAdjacentHTML('beforeend',nextHtml); }
+  else if(seg.type==='reading'){ renderReading(body,d,week); body.insertAdjacentHTML('beforeend',nextHtml); }
+  else if(seg.type==='guided'){
+    const g=guidedContent(seg,week);
+    body.innerHTML=`<div class="card" style="background:var(--bg2);margin:6px 0"><h3 style="margin-top:0">${g.title}</h3><div style="font-size:15px">${g.body}</div>${g.say?'<div style="text-align:center;margin:10px 0"><button class="speakbtn" id="readSpeak">🔊 Escuchar</button></div>':''}<div class="smallnote">${g.tip||''}</div></div>`+nextHtml;
+    const rs=document.getElementById('readSpeak'); if(rs)rs.onclick=()=>speak(g.say);
+  } else {
+    ensureSegSet(d,seg.type);
+    if(!d.set.length || d.cur>=d.set.length){
+      body.innerHTML=`<div class="card" style="background:var(--bg2);margin:6px 0;text-align:center"><h3 style="margin-top:0">✅ ¡Has hecho todo lo nuevo de "${seg.label}" hoy!</h3><div class="smallnote">Regla de oro: no repetimos lo que ya sabes. Pulsa "Siguiente actividad". Lo que fallaste se repasa en 🔁 Repaso.</div></div>`;
+    } else {
+      renderExercise(body,d,d.set[d.cur],d.cur,d.set.length);
+    }
+    body.insertAdjacentHTML('beforeend',nextHtml);
+  }
+  const sn=document.getElementById('segNext'); if(sn)sn.onclick=nextSegment;
+}
+
+function speak(word){ try{const u=new SpeechSynthesisUtterance(word);u.lang='en-US';u.rate=.9;speechSynthesis.cancel();speechSynthesis.speak(u);}catch(e){} }
+function renderExercise(area,d,ex,idx,n){
+  const tag = ex.exam?'📝 examen' : (ex.reinforce?'🔁 refuerzo' : (ex.review?'🔁 repaso' : (ex.gram?'gramática':'vocabulario')));
+  let html=`<div class="exwrap"><div class="exhead"><span>${ex.exam?'Examen · ':''}Ejercicio ${idx+1} de ${n}</span><span class="extag">${tag}</span></div>`;
+  html+=`<div class="exq">${ex.q}</div>`;
+  if(ex.sayPre && ex.say){ html+=`<div style="text-align:center;margin:8px 0"><button class="speakbtn" id="speakBtn">🔊 Escuchar</button></div>`; }
+  if(ex.t==='opts'){ html+=`<div class="opts" id="optBox"></div>`; }
+  else { html+=`<input class="exinput" id="exInput" placeholder="escribe en inglés" autocomplete="off" autocapitalize="off">${ex.hint?('<div class="smallnote" style="text-align:center">Pista: '+ex.hint+'</div>'):''}`; }
+  html+=`<div id="exFb"></div><button class="exbtn" id="checkBtn">Comprobar</button></div>`;
+  area.innerHTML=html;
+  let selected=-1;
+  if(ex.t==='opts'){
+    const box=document.getElementById('optBox');
+    ex.opts.forEach((o,k)=>{ const el=document.createElement('div'); el.className='opt'+(ex.emoji?' emoji':''); el.textContent=o;
+      el.onclick=()=>{ if(box.dataset.locked)return; selected=k; [...box.children].forEach(c=>c.classList.remove('sel')); el.classList.add('sel'); }; box.appendChild(el); });
+  } else { setTimeout(()=>{const inp=document.getElementById('exInput'); if(inp)inp.focus();},80); }
+  const sb=document.getElementById('speakBtn'); if(sb){ sb.onclick=()=>speak(ex.say); if(ex.listen) setTimeout(()=>speak(ex.say),250); }
+  const inp=document.getElementById('exInput'); if(inp) inp.addEventListener('keydown',e=>{if(e.key==='Enter')document.getElementById('checkBtn').click();});
+  document.getElementById('checkBtn').onclick=()=>{
+    let correct=false;
+    if(ex.t==='opts'){ if(selected<0)return; correct=selected===ex.a; const box=document.getElementById('optBox'); box.dataset.locked='1';
+      [...box.children].forEach((c,k)=>{ if(k===ex.a)c.classList.add('correct'); if(k===selected&&!correct)c.classList.add('wrong'); }); }
+    else { const v=document.getElementById('exInput'); correct=norm(v.value)===norm(ex.a); v.disabled=true; }
+    d.ex['e'+idx]={correct}; d.score.t++; if(correct)d.score.c++; recordResult(ex.topic,ex.label,correct);
+    d.seen=d.seen||[]; d.seen.push(ex.seenKey||ex.topic); if(d.seen.length>600)d.seen=d.seen.slice(-600); save();
+    const fb=document.getElementById('exFb'); fb.className='exfeedback '+(correct?'ok':'no');
+    const ansTxt = ex.t==='opts'? ex.opts[ex.a] : ex.a;
+    fb.innerHTML=(correct?'✅ ¡Correcto!':'❌ Respuesta correcta: <b>'+ansTxt+'</b>')+(ex.say?' <button class="speakbtn" id="speakBtn2" style="padding:4px 10px;font-size:13px;margin-left:6px">🔊</button>':'');
+    if(ex.gram) fb.innerHTML+='<div style="margin-top:8px;font-size:13.5px;color:var(--text);background:rgba(91,140,255,.12);border-radius:8px;padding:8px 10px">ℹ️ '+gramExplain(ex.q,ex.opts,ex.opts[ex.a])+'</div>';
+    const s2=document.getElementById('speakBtn2'); if(s2) s2.onclick=()=>speak(ex.say);
+    const cb=document.getElementById('checkBtn'); cb.textContent=(idx+1>=n)?'Ver resumen':'Siguiente ▶';
+    cb.onclick=()=>{ d.cur=idx+1; save(); renderSession(); renderTop(); renderProgress(); renderInsights(); };
+  };
+}
+
+//==================== INSIGHTS PROACTIVOS ====================
+function computeInsights(data){
+  data=data||store; const out=[];
+  const cd=completedDaysOf(data);
+  const elapsed = ti<0?0:Math.min(ti+1,DAYS);
+  // ritmo
+  if(elapsed>0){
+    if(cd>=elapsed) out.push({ic:'🚀',t:'Vas al día o por delante del plan ('+cd+'/'+elapsed+' días). Si quieres, adelanta contenido.'});
+    else if(elapsed-cd>=3) out.push({ic:'⏰',t:'Llevas '+(elapsed-cd)+' días por detrás. Te recomiendo una sesión extra esta semana para no acumular.'});
+    else out.push({ic:'👍',t:'Buen ritmo: '+cd+' de '+elapsed+' días completados.'});
+  }
+  // precisión
+  const acc=accuracyOf(data);
+  if(acc!==null){
+    if(acc<60) out.push({ic:'🎯',t:'Tu precisión es '+acc+'%. He metido más refuerzo en los próximos días para afianzar.'});
+    else if(acc>=90) out.push({ic:'🌟',t:'Precisión excelente ('+acc+'%). ¡Vas muy fino!'});
+    else out.push({ic:'📈',t:'Precisión '+acc+'%. Vas bien; la repetición hará el resto.'});
+  }
+  // refuerzo
+  const weak=weakTopics(data);
+  if(weak.length){ out.push({ic:'🔁',t:'Hoy reforzamos lo que costó: '+weak.slice(0,4).join(', ')+(weak.length>4?'…':'')+'.'}); }
+  // racha
+  const st=streakOf(data);
+  if(st>=3) out.push({ic:'🔥',t:'¡Racha de '+st+' días! No la rompas, aunque sea una sesión corta.'});
+  // examen
+  const exW=isExamDay(viewDay); const dd=(data.days||{})['d'+viewDay];
+  if(exW && !(dd&&dd.done)) out.push({ic:'📝',t:'Hoy es EXAMEN de la fase. Repasa y demuestra lo aprendido (necesitas 70% para aprobar el nivel).'});
+  // niveles conseguidos
+  const lv=Object.keys(data.levels||{}); if(lv.length) out.push({ic:'🏆',t:'Niveles superados: '+lv.join(', ')+'. ¡Sigue así!'});
+  // consejo del día
+  const tip=TIPS[((ti<0?0:ti))%TIPS.length]; out.push({ic:'💡',t:'Consejo: '+tip});
+  if(!out.length) out.push({ic:'✨',t:'Empieza tu sesión: pulsa ▶ y deja que el sistema te guíe.'});
+  return out;
+}
+const TIPS=[
+ "estudia poco pero TODOS los días; la constancia gana al maratón.",
+ "di las palabras en voz alta; el oído y la boca aprenden juntos.",
+ "no traduzcas palabra por palabra; capta la idea general.",
+ "repite las frases de las series imitando la entonación (shadowing).",
+ "equivocarse es aprender: cada fallo se convierte en refuerzo.",
+ "usa el botón 🔊 para oír cada palabra y copiar su sonido.",
+ "habla con Claude aunque sea con frases simples; lo importante es producir.",
+ "repasa 5 minutos lo de ayer antes de empezar lo nuevo.",
+ "piensa en inglés cosas cotidianas: 'I am drinking water'.",
+ "celebra tu racha: la motivación también se entrena."
+];
+function renderInsights(){
+  const box=document.getElementById('insightsBox'); if(!box)return;
+  const ins=computeInsights(store);
+  box.innerHTML='<h3 style="margin:6px 0">🧭 Recomendaciones del sistema</h3>'+ins.map(x=>`<div class="insight"><span class="ic">${x.ic}</span><span>${x.t}</span></div>`).join('');
+}
+
+//==================== STATS ====================
+function completedDaysOf(d){ d=d||store; let n=0; const days=(d.days)||{}; for(const k in days){ if(days[k]&&days[k].done)n++; } return n; }
+function streakOf(d){ d=d||store; const days=(d.days)||{}; let s=0; let i=Math.min(ti,DAYS-1); if(i<0)return 0; for(;i>=0;i--){ const o=days['d'+i]; if(o&&o.done)s++; else break; } return s; }
+function accuracyOf(d){ d=d||store; const days=(d.days)||{}; let c=0,t=0; for(const k in days){ const o=days[k]; if(o&&o.score){c+=o.score.c;t+=o.score.t;} } return t?Math.round(c/t*100):null; }
+function minutesOf(d){ d=d||store; const days=(d.days)||{}; let s=0; for(const k in days){ if(days[k])s+=days[k].el||0; } return Math.round(s/60); }
+function completedDays(){return completedDaysOf(store);}
+function currentStreak(){return streakOf(store);}
+
+//==================== RENDER TOP ====================
+function renderTop(){
+  const w=ti<0?0:Math.min(48,Math.floor(ti/7)+1);
+  const ph=phaseOfWeek(Math.max(1,w||1));
+  const tb=document.getElementById('topbar');
+  let lvl = ti<0? ("Empieza en "+(-ti)+" días") : ph.level;
+  tb.innerHTML=`<div class="pill">📚 <b>${lvl}</b></div>
+     <div class="pill">📅 Semana <b>${ti<0?0:w}/48</b></div>
+     <div class="pill">🔥 <b>${currentStreak()}</b> días</div>
+     <div class="pill">✅ <b>${completedDays()}/${DAYS}</b></div>`;
+  document.getElementById('globalbar').style.width=(completedDays()/DAYS*100)+'%';
+}
+
+//==================== PLAN / METAS / RECURSOS ====================
+function renderPlan(){
+  const acc=document.getElementById('planAccordion'); acc.innerHTML='';
+  PHASES.forEach(p=>{
+    let rows='';
+    for(let w=p.w[0];w<=p.w[1];w++){
+      const wk=WEEKS[w-1]; const d0=fmtShort(dateOfDay((w-1)*7)),d1=fmtShort(dateOfDay((w-1)*7+6));
+      const mile=MILES[w]?` <span class="phasechip" style="background:var(--warn)">🚩</span>`:'';
+      rows+=`<tr><td><b>S${w}</b><br><span style="color:var(--muted)">${d0}–${d1}</span></td><td>${wk.g}${mile}</td><td>${wk.v}</td></tr>`;
+    }
+    const det=document.createElement('details');
+    det.innerHTML=`<summary><span><span class="phasechip" style="background:${p.color}">${p.level}</span> ${p.name}</span><span style="color:var(--muted)">S${p.w[0]}–${p.w[1]} ▾</span></summary><div class="inner"><table><tr><th>Sem</th><th>Gramática</th><th>Vocabulario</th></tr>${rows}</table></div>`;
+    acc.appendChild(det);
+  });
+}
+function renderMiles(){
+  const c=document.getElementById('mileList'); c.innerHTML='';
+  Object.keys(MILES).map(Number).sort((a,b)=>a-b).forEach(w=>{
+    const m=MILES[w]; const date=dateOfDay(w*7-1); const passed=ti>=(w*7-1); const ph=phaseOfWeek(w);
+    const el=document.createElement('div'); el.className='mile'+(passed?' passed':'');
+    el.innerHTML=`<div class="dot" style="background:${ph.color}"></div><div><div class="mdate">${fmt(date)}${passed?' · ✅':''}</div><div class="mtitle">${m.t}</div><div class="mdesc">${m.d}</div></div>`;
+    c.appendChild(el);
+  });
+}
+function renderRes(){
+  const c=document.getElementById('resBody'); if(!c)return; const age=ageOf();
+  c.innerHTML=`<p style="color:var(--muted);font-size:13px">Series adaptadas a tu perfil: <b>${AGE_LABEL[age]}</b> (cámbialo en "Mi progreso").</p>`;
+  PHASES.forEach(p=>{ const ser=(SERIES_BY_AGE[age]||SERIES_BY_AGE.adult)[p.n-1];
+    c.innerHTML+=`<details><summary><span class="phasechip" style="background:${p.color}">${p.level}</span> ${p.name}</summary><div class="inner"><p>🎬 <b>Series/vídeo (${AGE_LABEL[age]}):</b> ${ser}</p><p>🎧 <b>Escucha:</b> ${p.listen}</p><p>📖 <b>Lectura:</b> ${p.read}</p></div></details>`; });
+}
+
+//==================== PROGRESO ====================
+function renderProgress(){
+  document.getElementById('kDays').textContent=completedDays();
+  document.getElementById('kStreak').textContent=currentStreak();
+  document.getElementById('kPct').textContent=Math.round(completedDays()/DAYS*100)+'%';
+  const acc=accuracyOf(store); document.getElementById('kAcc').textContent=acc===null?'—':acc+'%';
+  document.getElementById('kHours').textContent=Math.round(minutesOf(store)/60);
+  const weak=weakTopics(store);
+  document.getElementById('weakList').innerHTML = weak.length? weak.slice(0,12).map(t=>`<span class="tag">${t}</span>`).join('') : 'Nada pendiente de refuerzo por ahora. 👌';
+  renderMastered();
+}
+function masteredCounts(data){ const m=(data&&data.mastery)||{}; let v=0,g=0,p=0; Object.keys(m).forEach(k=>{ const o=m[k]; if(!(o&&o.c>=3&&o.ok>=2))return; if(k.indexOf('gram:')===0)g++; else if(k.indexOf('pron:')===0)p++; else v++; }); return {v:v,g:g,p:p}; }
+function renderMastered(){
+  const box=document.getElementById('masteredBox'); if(!box)return; const m=store.mastery||{};
+  const voc=[],gra=[],pro=[];
+  Object.keys(m).forEach(k=>{ if(!isMastered(k))return; if(k.indexOf('gram:')===0)gra.push(k.slice(5).replace(/\|/g,'/')); else if(k.indexOf('pron:')===0)pro.push(k.slice(5)); else voc.push(k); });
+  box.innerHTML=`<div class="row" style="margin-bottom:8px">
+     <div class="kpi"><div class="n">${voc.length}</div><div class="l">Palabras dominadas</div></div>
+     <div class="kpi"><div class="n">${gra.length}</div><div class="l">Gramática</div></div>
+     <div class="kpi"><div class="n">${pro.length}</div><div class="l">Pronunciación</div></div></div>`
+   + (voc.length?'<div><b>Vocabulario:</b> '+voc.slice(0,40).map(w=>'<span class="tag">'+w+'</span>').join(' ')+'</div>':'')
+   + (gra.length?'<div style="margin-top:6px"><b>Gramática:</b> '+gra.map(w=>'<span class="tag">'+w+'</span>').join(' ')+'</div>':'')
+   + (pro.length?'<div style="margin-top:6px"><b>Pronunciación:</b> '+pro.slice(0,40).map(w=>'<span class="tag">'+w+'</span>').join(' ')+'</div>':'')
+   + ((!voc.length&&!gra.length&&!pro.length)?'Aún no hay nada dominado. Cuando acierten algo 3 veces, aparecerá aquí como "dominado" y el sistema lo mostrará menos para centrarse en lo nuevo.':'');
+}
+
+//==================== PANEL FAMILIAR ====================
+async function renderDash(){
+  const body=document.getElementById('dashBody'); body.innerHTML='Cargando…';
+  try{
+    const {data,error}=await supa.from('progress').select('display_name,email,data,updated_at').order('updated_at',{ascending:false});
+    if(error)throw error;
+    if(!data||!data.length){ body.innerHTML='<p style="color:var(--muted)">Aún no hay datos. Cuando alguien practique, aparecerá aquí.</p>'; return; }
+    body.innerHTML='';
+    data.forEach(r=>{
+      const d=r.data||{}; const cd=completedDaysOf(d); const pct=Math.round(cd/DAYS*100); const st=streakOf(d);
+      const acc=accuracyOf(d); const mins=minutesOf(d); const weak=weakTopics(d); const lv=Object.keys(d.levels||{}); const mc=masteredCounts(d);
+      const upd=r.updated_at?new Date(r.updated_at).toLocaleDateString('es-ES',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}):'—';
+      const div=document.createElement('div'); div.className='dashrow';
+      div.innerHTML=`<span class="nm">${r.display_name||r.email}</span>
+        <div class="dashbar"><i style="width:${pct}%"></i></div>
+        <div style="font-size:12px;color:var(--muted);width:100%">
+          ${cd}/${DAYS} días · ${pct}% · 🔥${st} · ⏱️${mins} min · 🎯${acc===null?'—':acc+'%'} · últ. ${upd}
+          ${lv.length?'<br>🏆 niveles: '+lv.join(', '):''}
+          <br>🏅 domina: ${mc.v} palabras · ${mc.g} gram · ${mc.p} pron
+          ${weak.length?'<br>🔁 refuerza: '+weak.slice(0,6).join(', '):''}
+        </div>`;
+      body.appendChild(div);
+    });
+  }catch(e){ body.innerHTML='<p style="color:var(--danger)">No se pudo cargar: '+e.message+'</p>'; }
+}
+document.getElementById('dashReload').onclick=renderDash;
+// cambiar contraseña (estando dentro)
+(function(){ const b=document.getElementById('changePwBtn'); if(!b)return;
+  b.onclick=async()=>{
+    const m=document.getElementById('pwMsg'); const np=document.getElementById('newPass').value||'';
+    if(!CLOUD_ON||!sessionUser){m.style.color='var(--danger)';m.textContent='Debes haber iniciado sesión.';return;}
+    if(np.length<6){m.style.color='var(--danger)';m.textContent='La contraseña debe tener mínimo 6 caracteres.';return;}
+    m.style.color='var(--muted)';m.textContent='Guardando…';
+    try{ const {error}=await supa.auth.updateUser({password:np}); if(error)throw error;
+      m.style.color='var(--ok)';m.textContent='✅ Contraseña cambiada. Úsala la próxima vez que entres.'; document.getElementById('newPass').value=''; }
+    catch(e){ m.style.color='var(--danger)';m.textContent='Error: '+e.message; }
+  };
+})();
+
+//==================== NAV / COPIAR / IO ====================
+document.getElementById('nav').addEventListener('click',e=>{
+  if(e.target.tagName!=='BUTTON')return;
+  document.querySelectorAll('#nav button').forEach(b=>b.classList.remove('active'));
+  e.target.classList.add('active');
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.getElementById('v-'+e.target.dataset.v).classList.add('active');
+  if(e.target.dataset.v==='panel') renderDash();
+});
+document.addEventListener('click',e=>{
+  if(e.target.classList.contains('copybtn')){
+    const code=e.target.parentElement.querySelector('code').textContent;
+    navigator.clipboard.writeText(code).then(()=>{e.target.textContent='¡Copiado!';setTimeout(()=>e.target.textContent='Copiar',1500);});
+  }
+});
+document.getElementById('prevDay').onclick=()=>{ if(viewDay>0){pauseTimer();viewDay--;renderDay();} };
+document.getElementById('nextDay').onclick=()=>{ if(viewDay<DAYS-1){pauseTimer();viewDay++;renderDay();} };
+function ioMsg(t,ok){const m=document.getElementById('ioMsg');m.style.color=ok?'var(--ok)':'var(--danger)';m.textContent=t;setTimeout(()=>{if(m.textContent===t)m.textContent='';},4000);}
+document.getElementById('exportBtn').onclick=()=>{
+  const backup={app:"planIngles",version:2,exportedAt:new Date().toISOString(),user:currentUser,data:store};
+  const blob=new Blob([JSON.stringify(backup,null,2)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='copia-plan-ingles-'+new Date().toISOString().slice(0,10)+'.json';a.click();
+  ioMsg('Copia descargada ✅',true);
+};
+document.getElementById('importBtn').onclick=()=>document.getElementById('importFile').click();
+document.getElementById('importFile').addEventListener('change',ev=>{
+  const f=ev.target.files[0]; if(!f)return; const r=new FileReader();
+  r.onload=()=>{ try{ const obj=JSON.parse(r.result); const d=(obj&&obj.data)?obj.data:obj; if(d&&typeof d==='object'){ store=d; ensureStore(); save(); viewDay=Math.max(0,Math.min(DAYS-1,ti<0?0:ti)); renderTop();renderDay();renderProgress(); ioMsg('Progreso restaurado ✅',true);} else ioMsg('Archivo no válido.',false);}catch(e){ioMsg('No se pudo leer: '+e.message,false);} ev.target.value=''; };
+  r.readAsText(f);
+});
+
+//==================== PERFIL POR EDAD ====================
+function renderAgeRow(){ const r=document.getElementById('ageRow'); if(!r)return; const cur=ageOf();
+  r.innerHTML=['kid','teen','adult'].map(a=>`<button class="btn ${cur===a?'':'ghost'}" data-setage="${a}" style="flex:1;min-width:120px">${AGE_LABEL[a]}</button>`).join(' ');
+  r.querySelectorAll('[data-setage]').forEach(b=>b.onclick=()=>{ store.profile=store.profile||{}; store.profile.age=b.dataset.setage; save(); renderAgeRow(); renderDay(); renderRes(); });
+}
+function ensureProfile(){ if(store.profile && store.profile.age){ return true; } const o=document.getElementById('profileOverlay'); if(o)o.style.display='flex'; return false; }
+document.querySelectorAll('#profileOverlay [data-age]').forEach(b=>b.onclick=()=>{ store.profile=store.profile||{}; store.profile.age=b.dataset.age; save(); const o=document.getElementById('profileOverlay'); if(o)o.style.display='none'; renderAgeRow(); renderDay(); renderRes(); });
+
+//==================== INIT ====================
+renderPlan(); renderMiles(); renderRes();
+if(CLOUD_ON){ setSync('','Conectando…'); initAuth(); }
+else { setSync('off',''); renderTop(); renderDay(); renderProgress(); renderAgeRow(); ensureProfile(); }
+</script>
+</body>
+</html>
