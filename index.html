@@ -602,28 +602,129 @@ function makeVocabExercise(item,week,kind){
   return {t:'opts',topic:en,label:es,say:en,sayPre:true,q:'¿Qué significa "'+en+'"?',opts:opts.map(o=>o[1]),a:opts.findIndex(o=>o[0]===en)};
 }
 function optsSig(o){ return o.map(x=>(''+x).toLowerCase()).sort().join('|'); } // concepto: agrupa por sus opciones (a/an, am/is/are...)
+function subjInfo(q){
+  const ql=' '+(q||'').toLowerCase().replace(/[^a-z' ]/g,' ')+' ';
+  if(/ i /.test(ql)) return {p:'I',es:'yo',be:'am',aux:'do',third:false};
+  if(/ he /.test(ql)) return {p:'he',es:'él',be:'is',aux:'does',third:true};
+  if(/ she /.test(ql)) return {p:'she',es:'ella',be:'is',aux:'does',third:true};
+  if(/ it /.test(ql)) return {p:'it',es:'ello/eso',be:'is',aux:'does',third:true};
+  if(/ we /.test(ql)) return {p:'we',es:'nosotros',be:'are',aux:'do',third:false};
+  if(/ they /.test(ql)) return {p:'they',es:'ellos',be:'are',aux:'do',third:false};
+  if(/ you /.test(ql)) return {p:'you',es:'tú/vosotros',be:'are',aux:'do',third:false};
+  return null;
+}
 function gramExplain(q,opts,ansTxt){
   const ql=(q||'').toLowerCase().trim(); const lo=opts.map(o=>(''+o).toLowerCase()); const inc=w=>lo.indexOf(w)>=0;
-  const A='La forma correcta es "'+ansTxt+'". ';
-  if((/^_{2,}/.test(ql)||/don't __/.test(ql)) && !/\?/.test(q) && (inc('open')||inc('opens')||inc('be')||inc('is')||inc('do'))) return A+'Es un imperativo (una orden o instrucción): se usa el verbo base sin sujeto — "Open the door", "Be quiet".';
-  if(/\bthan\b/.test(ql)||inc('faster')||inc('better')) return A+'Comparativo: adjetivo + -er (fast→faster) o irregular (good→better), seguido de "than".';
-  if(lo.some(o=>/ing$/.test(o))) return A+'Presente continuo: be (am/is/are) + verbo en -ing ("is watching"), para algo que ocurre ahora.';
+  const A='La forma correcta es «<b>'+ansTxt+'</b>».<br>';
+  const R=t=>'<b>📐 Regla:</b> '+t; const W=t=>'<br><b>🤔 Por qué aquí:</b> '+t; const T=t=>'<br><b>💡 Truco:</b> '+t; const E=t=>'<br><b>📝 Ejemplos:</b> '+t;
+  const s=subjInfo(q);
+
+  // IMPERATIVO
+  if((/^_{2,}/.test(ql)||/don't __/.test(ql)) && !/\?/.test(q) && !s && (inc('open')||inc('opens')||inc('be')||inc('is')||inc('do')||inc('close')||inc('sit')))
+    return A+R('cuando das una orden, instrucción o consejo, usas el verbo en su forma base y NO pones sujeto delante. Es el "imperativo".')
+      +W('la frase manda algo directamente (no dice quién lo hace), por eso va el verbo solo, sin "you" ni -s.')
+      +T('si puedes empezar la frase en español con "¡...!" (¡Abre!, ¡Siéntate!), en inglés va el verbo base solo.')
+      +E('<b>Open</b> the door = Abre la puerta · <b>Be</b> quiet = Estate callado · Don\'t <b>run</b> = No corras.');
+
+  // COMPARATIVO
+  if(/\bthan\b/.test(ql)||inc('faster')||inc('better')||inc('bigger')||inc('taller'))
+    return A+R('para comparar dos cosas usamos el comparativo: a los adjetivos cortos les añadimos <b>-er</b> (fast→faster, big→bigger) y detrás va <b>than</b> (=que). Algunos son irregulares: good→better, bad→worse.')
+      +W('estás comparando dos elementos, y la palabra clave «than» (que) pide la forma terminada en -er.')
+      +T('-er + than = "más ___ que". taller than = más alto que.')
+      +E('He is <b>taller than</b> me = Él es más alto que yo · This is <b>better</b> = Esto es mejor.');
+
+  // PRESENTE CONTINUO
+  if(lo.some(o=>/ing$/.test(o)) || (/\b[a-z]+ing\b/.test(ql)&&(inc('am')||inc('is')||inc('are'))))
+    return A+R('el presente continuo describe algo que ocurre <b>ahora mismo</b>. Se forma con el verbo «to be» (am/is/are) + el verbo principal con <b>-ing</b>.')
+      +W('la acción está pasando en este momento'+(s?(', y el sujeto «'+s.p+'» ('+s.es+') usa «'+s.be+'»'):'')+'. Por eso la otra forma (sin -ing o sin be) no encaja.')
+      +T('"-ing" en inglés = "-ando/-iendo" en español (watching = mirando).')
+      +E('She <b>is watching</b> TV = Ella está viendo la tele · I <b>am eating</b> = Estoy comiendo.');
+
+  // TO BE  (am/is/are) y THERE IS/ARE
   if(inc('am')||inc('is')||inc('are')){
-    if(/\b[a-z]+ing\b/.test(ql)) return A+'Presente continuo: be + verbo -ing. I→am, he/she/it→is, you/we/they→are.';
-    if(/there/.test(ql)) return A+'"There is" + singular (un objeto); "There are" + plural (varios).';
-    return A+'Verbo TO BE: con I→am, con he/she/it (singular)→is, con you/we/they (plural)→are.';
+    if(/there/.test(ql))
+      return A+R('«There is» = "hay" (para UNA cosa, singular). «There are» = "hay" (para VARIAS cosas, plural).')
+        +W('mira el nombre que viene después: si es uno → there is; si son varios → there are.')
+        +E('<b>There is</b> a cat = Hay un gato · <b>There are</b> two cats = Hay dos gatos.');
+    return A+R('el verbo «to be» (ser/estar) cambia según quién sea el sujeto: <b>I am</b> (yo soy/estoy), <b>he/she/it is</b> (él/ella/eso es), <b>you/we/they are</b> (tú/nosotros/ellos sois/somos).')
+      +(s?W('el sujeto es «'+s.p+'» ('+s.es+'), y a ese sujeto le corresponde «<b>'+s.be+'</b>». Las otras formas son para otros sujetos.'):'')
+      +T('memoriza el trío: I→am, he/she/it→is, you/we/they→are.')
+      +E('I <b>am</b> happy = Estoy feliz · She <b>is</b> a doctor = Ella es médica · They <b>are</b> here = Ellos están aquí.');
   }
-  if(inc('a')&&inc('an')) return A+'Artículos: "a" antes de sonido consonante (a dog); "an" antes de sonido vocal (an apple, an hour).';
-  if(inc('the')) return A+'"The" para algo concreto o único (the sun); "a/an" para algo no específico.';
-  if(inc('do')&&inc('does')) return A+'Preguntas y negativas del presente: "does" con he/she/it; "do" con I/you/we/they.';
-  if(inc('has got')||inc('have got')) return A+'"have got" con I/you/we/they; "has got" con he/she/it.';
-  if(inc('can')||inc('cans')) return A+'"can" es un verbo modal: igual para todos (I can, he can) y nunca lleva -s.';
-  if(['always','never','sometimes','often','usually'].some(f=>inc(f))) return A+'Los adverbios de frecuencia (always, never, sometimes…) van antes del verbo principal.';
-  if(['her','him','them','me','us'].some(p=>inc(p))) return A+'Pronombres de objeto (me, him, her, us, them) van tras el verbo o preposición; los de sujeto (I, he, she, we, they) van antes del verbo.';
-  if(['in','on','under','at'].some(p=>inc(p))) return A+'Preposiciones de lugar: in (dentro), on (encima/sobre), under (debajo). Con días se usa "on" (on Monday).';
-  if(opts.length===2){ const a=lo[0],b=lo[1]; if(b===a+'s'||b===a+'es'||(a==='go'&&b==='goes')||(a.slice(-1)==='y'&&b===a.slice(0,-1)+'ies')||a===b+'s') return A+'Presente simple: con he/she/it el verbo añade -s/-es (he drinks, she goes); con I/you/we/they no.'; }
-  if(inc('children')||inc('boxes')||inc('babies')||inc('childs')) return A+'Plural de los nombres: normalmente se añade -s/-es (box→boxes); algunos son irregulares (child→children).';
-  return A+'Fíjate en el sujeto de la frase y aplica la regla de esta semana.';
+
+  // A / AN
+  if(inc('a')&&inc('an'))
+    return A+R('«a» y «an» significan lo mismo ("un/una"), pero se eligen por el SONIDO de la palabra siguiente: <b>an</b> antes de sonido de vocal (a, e, i, o, u), <b>a</b> antes de sonido de consonante.')
+      +W('se mira cómo SUENA, no cómo se escribe: an apple (vocal), an hour (la h es muda→suena vocal), pero a university (suena "yu", consonante).')
+      +T('si al decir la palabra abres la boca con vocal, usa «an».')
+      +E('<b>a</b> dog = un perro · <b>an</b> apple = una manzana · <b>an</b> egg = un huevo.');
+
+  // THE
+  if(inc('the'))
+    return A+R('«the» = "el/la/los/las". Se usa para algo <b>concreto, conocido o único</b> (que ya sabemos cuál es). «a/an» es para algo cualquiera, no específico.')
+      +W('la frase se refiere a algo identificado o único (el sol, esa puerta concreta), por eso lleva «the» y no «a».')
+      +T('¿es ESE en concreto o algo único? → the. ¿uno cualquiera? → a/an.')
+      +E('<b>the</b> sun = el sol (solo hay uno) · Open <b>the</b> door = abre la puerta (esa) · I want <b>a</b> book = quiero un libro (cualquiera).');
+
+  // DO / DOES
+  if(inc('do')&&inc('does'))
+    return A+R('en preguntas y negaciones del presente simple usamos un "ayudante" (verbo auxiliar): <b>do</b> o <b>does</b>. El verbo principal se queda en su forma base, sin -s.')
+      +'<br><b>📋 Cuándo cada uno:</b> <b>does</b> con he, she, it (3ª persona singular). <b>do</b> con I, you, we, they.'
+      +(s?W('el sujeto es «'+s.p+'» ('+s.es+'), que pide «<b>'+s.aux+'</b>».'):'')
+      +T('la "-s" de él/ella salta al ayudante: <i>Does</i>. Por eso el verbo ya no la lleva: "Does she <u>like</u>?", nunca "Does she likes?".')
+      +E('<b>Does</b> he work? = ¿Él trabaja? · <b>Do</b> you like coffee? = ¿Te gusta el café? · They <b>don\'t</b> know = No lo saben.');
+
+  // HAVE / HAS GOT
+  if(inc('has got')||inc('have got')||inc('has')||inc('have'))
+    return A+R('«have got / has got» = "tener". <b>have got</b> con I, you, we, they; <b>has got</b> con he, she, it.')
+      +(s?W('el sujeto es «'+s.p+'» ('+s.es+'), así que «'+(s.third?'has':'have')+' got».'):'')
+      +T('él/ella/eso (3ª persona) casi siempre lleva una -s: he ha<b>s</b>.')
+      +E('I <b>have got</b> a car = Tengo un coche · She <b>has got</b> a dog = Ella tiene un perro.');
+
+  // CAN (modal)
+  if(inc('can')||inc('cans')||inc("can't")||inc('cannot'))
+    return A+R('«can» = "poder/saber". Es un verbo modal: es <b>igual para todos</b> los sujetos y nunca lleva -s. Detrás va el verbo en forma base.')
+      +W('aunque el sujeto sea he/she/it, «can» no cambia: por eso "cans" no existe.')
+      +T('modal = invariable. I can, you can, he can… todos iguales.')
+      +E('I <b>can</b> swim = Sé nadar · She <b>can</b> dance = Ella sabe bailar · We <b>can\'t</b> go = No podemos ir.');
+
+  // ADVERBIOS DE FRECUENCIA
+  if(['always','never','sometimes','often','usually'].some(f=>inc(f)))
+    return A+R('los adverbios de frecuencia (always=siempre, usually=normalmente, often=a menudo, sometimes=a veces, never=nunca) dicen CADA CUÁNTO pasa algo, y van <b>antes del verbo principal</b> (pero después de «to be»).')
+      +W('su posición fija en la frase, justo antes del verbo, es lo que marca la respuesta correcta.')
+      +T('"yo SIEMPRE como" → I always eat (el adverbio se mete entre el sujeto y el verbo).')
+      +E('I <b>always</b> drink tea = Siempre bebo té · She is <b>never</b> late = Ella nunca llega tarde.');
+
+  // PRONOMBRES DE OBJETO
+  if(['her','him','them','me','us','it'].some(p=>inc(p)) && ['i','he','she','we','they','you'].some(p=>inc(p)))
+    return A+R('hay dos tipos de pronombres. De <b>sujeto</b> (quien hace la acción): I, you, he, she, it, we, they. De <b>objeto</b> (quien recibe la acción): me, you, him, her, it, us, them.')
+      +W('después de un verbo o una preposición (to, with, for…) va el pronombre de OBJETO. Antes del verbo va el de sujeto.')
+      +'<br><b>🔁 Pares:</b> I↔me · he↔him · she↔her · we↔us · they↔them.'
+      +E('<b>I</b> love <b>her</b> = Yo la quiero (I sujeto, her objeto) · Give it to <b>them</b> = Dáselo a ellos.');
+
+  // PREPOSICIONES DE LUGAR
+  if(['in','on','under','at','behind','next'].some(p=>inc(p)))
+    return A+R('preposiciones de lugar: <b>in</b>=dentro de · <b>on</b>=encima/sobre (tocando) · <b>under</b>=debajo de · <b>at</b>=en (un punto concreto).')
+      +W('piensa en la posición real del objeto: ¿está dentro, encima o debajo? Eso decide la palabra.')
+      +T('con días y fechas se usa «on» (on Monday), con horas «at» (at 5), con meses/años «in» (in May).')
+      +E('The cat is <b>under</b> the table = El gato está debajo de la mesa · The book is <b>on</b> the desk = El libro está sobre el escritorio.');
+
+  // PRESENTE SIMPLE: -s de 3ª persona
+  if(opts.length===2){ const a=lo[0],b=lo[1]; if(b===a+'s'||b===a+'es'||(a==='go'&&b==='goes')||(a.slice(-1)==='y'&&b===a.slice(0,-1)+'ies')||a===b+'s'||a===b+'es')
+    return A+R('en el presente simple, con <b>he, she, it</b> (3ª persona del singular) el verbo añade <b>-s</b> (o -es). Con I, you, we, they el verbo va sin cambios.')
+      +(s?W('el sujeto es «'+s.p+'» ('+s.es+'): '+(s.third?'es 3ª persona, así que el verbo lleva -s.':'NO es 3ª persona, así que el verbo va sin -s.')):'')
+      +T('regla de oro: "he/she/it = una -s al final". he drink<b>s</b>, she goe<b>s</b>.')
+      +E('I <b>drink</b> coffee = Bebo café · He <b>drinks</b> coffee = Él bebe café · She <b>goes</b> home = Ella va a casa.');
+  }
+
+  // PLURALES
+  if(inc('children')||inc('boxes')||inc('babies')||inc('childs')||inc('boxs')||inc('mans')||inc('men'))
+    return A+R('el plural de los nombres normalmente añade <b>-s</b> (cat→cats) o <b>-es</b> si acaba en -s, -x, -ch, -sh (box→boxes). Si acaba en consonante+y, cambia a -ies (baby→babies).')
+      +'<br><b>⚠️ Irregulares</b> (hay que memorizarlos): child→children, man→men, woman→women, foot→feet.'
+      +W('esta palabra es irregular, no sigue la regla normal: por eso no vale añadir solo -s.')
+      +E('one box → two <b>boxes</b> · one child → two <b>children</b> · one baby → two <b>babies</b>.');
+
+  return A+R('fíjate en el SUJETO de la frase (quién hace la acción) y en qué quiere decir, y aplica la regla de esta semana. La forma correcta concuerda con ese sujeto.');
 }
 function gramFull(q,ans){ let s=(q||'').replace(/_{2,}|_+/, ans); s=s.replace(/\s+([.,!?])/g,'$1').replace(/\s+/g,' ').trim(); return s.charAt(0).toUpperCase()+s.slice(1); }
 function translateSentence(text,elId){
