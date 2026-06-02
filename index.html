@@ -625,6 +625,14 @@ function gramExplain(q,opts,ansTxt){
   if(inc('children')||inc('boxes')||inc('babies')||inc('childs')) return A+'Plural de los nombres: normalmente se añade -s/-es (box→boxes); algunos son irregulares (child→children).';
   return A+'Fíjate en el sujeto de la frase y aplica la regla de esta semana.';
 }
+function gramFull(q,ans){ let s=(q||'').replace(/_{2,}|_+/, ans); s=s.replace(/\s+([.,!?])/g,'$1').replace(/\s+/g,' ').trim(); return s.charAt(0).toUpperCase()+s.slice(1); }
+function translateSentence(text,elId){
+  const local=text.toLowerCase().replace(/[^a-z' ]/g,'').split(/\s+/).map(w=>EN2ES[w]).filter(Boolean);
+  fetch('https://api.mymemory.translated.net/get?q='+encodeURIComponent(text)+'&langpair=en|es')
+   .then(r=>r.json())
+   .then(j=>{ const t=j&&j.responseData&&j.responseData.translatedText; const el=document.getElementById(elId); if(el) el.textContent = t || (local.length?local.join(' '):'(sin traducción)'); })
+   .catch(()=>{ const el=document.getElementById(elId); if(el) el.textContent = local.length?local.join(' '):'(sin conexión para traducir)'; });
+}
 function reinKind(it){ const ks=it[2]?['pic','picword','choice','es2en','listen','spell']:['choice','es2en','listen','spell']; return ks[Math.floor(Math.random()*ks.length)]; }
 function makeGramExercise(g,week){
   return {t:'opts',topic:'gram:'+optsSig(g.o),seenKey:'g:'+week+':'+g.q,label:'Gramática ('+g.o.join('/')+')',q:g.q,opts:g.o,a:g.a,gram:true};
@@ -1157,7 +1165,13 @@ function renderExercise(area,d,ex,idx,n){
     const fb=document.getElementById('exFb'); fb.className='exfeedback '+(correct?'ok':'no');
     const ansTxt = ex.t==='opts'? ex.opts[ex.a] : ex.a;
     fb.innerHTML=(correct?'✅ ¡Correcto!':'❌ Respuesta correcta: <b>'+ansTxt+'</b>')+(ex.say?' <button class="speakbtn" id="speakBtn2" style="padding:4px 10px;font-size:13px;margin-left:6px">🔊</button>':'');
-    if(ex.gram) fb.innerHTML+='<div style="margin-top:8px;font-size:13.5px;color:var(--text);background:rgba(91,140,255,.12);border-radius:8px;padding:8px 10px">ℹ️ '+gramExplain(ex.q,ex.opts,ex.opts[ex.a])+'</div>';
+    if(ex.gram){
+      const full=gramFull(ex.q,ex.opts[ex.a]); const tid='gtr'+Math.random().toString(36).slice(2,7);
+      fb.innerHTML+='<div style="margin-top:8px;font-size:13.5px;color:var(--text);background:rgba(91,140,255,.12);border-radius:8px;padding:8px 10px">ℹ️ '+gramExplain(ex.q,ex.opts,ex.opts[ex.a])
+        +'<div style="margin-top:7px;padding-top:7px;border-top:1px solid rgba(91,140,255,.25);font-size:13px">📖 <b>'+full+'</b><br>🇪🇸 <span id="'+tid+'" style="color:var(--muted)">traduciendo…</span><br><button id="gFullSpk" style="margin-top:7px;padding:7px 14px;font-size:13px;border:none;border-radius:8px;background:var(--accent,#5b8cff);color:#fff;cursor:pointer">🔊 Escuchar la frase</button></div></div>';
+      translateSentence(full,tid);
+      setTimeout(()=>{ const b=document.getElementById('gFullSpk'); if(b) b.onclick=()=>speak(full); },0);
+    }
     const s2=document.getElementById('speakBtn2'); if(s2) s2.onclick=()=>speak(ex.say);
     const cb=document.getElementById('checkBtn'); cb.textContent=(idx+1>=n)?'Ver resumen':'Siguiente ▶';
     cb.onclick=()=>{ d.cur=idx+1; save(); renderSession(); renderTop(); renderProgress(); renderInsights(); };
